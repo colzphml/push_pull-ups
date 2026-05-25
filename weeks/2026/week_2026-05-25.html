@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Неделя 1 · Калибровка (25–31 мая)</title>
+<link rel="manifest" href="/push_pull-ups/manifest.json">
+<meta name="theme-color" content="#0e1217">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Push·Pull">
+<link rel="apple-touch-icon" href="/push_pull-ups/icons/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1217; --surface:#161d26; --card:#1b232e; --card-back:#1f2a37;
+    --border:#2c3a48; --accent:#4f9dd9; --accent-push:#e0a04e; --accent-mob:#a07fc4;
+    --text:#e6edf3; --text-muted:#8b9bab; --text-dim:#51606e;
+    --tag-bg:#202b38; --shadow:0 8px 32px rgba(0,0,0,0.55);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:0 0 60px}
+  body{padding-bottom:env(safe-area-inset-bottom,16px)}
+  .back-link{display:inline-flex;align-items:center;gap:6px;padding:20px 24px 0;font-size:13px;color:var(--text-muted);text-decoration:none;font-weight:500;transition:color .2s}
+  .back-link{padding-top:max(20px,calc(env(safe-area-inset-top) + 8px))}
+  .back-link:hover{color:var(--accent)}
+  header{padding:16px 24px 0;text-align:center;position:relative}
+  header::after{content:'';display:block;width:60px;height:2px;background:var(--accent);margin:14px auto 0;border-radius:2px}
+  header h1{font-family:'Playfair Display',serif;font-size:clamp(22px,5vw,34px);font-weight:700;letter-spacing:-0.5px;color:var(--text)}
+  header p{margin-top:6px;color:var(--text-muted);font-size:13px;font-weight:300;letter-spacing:0.5px}
+  nav{display:flex;justify-content:center;gap:6px;padding:28px 20px 0;flex-wrap:wrap}
+  .nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:9px 20px;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;letter-spacing:0.3px}
+  .nav-btn.active{background:var(--accent);border-color:var(--accent);color:#0e1217}
+  .nav-btn:hover:not(.active){border-color:var(--accent);color:var(--accent)}
+  .section{display:none;padding:28px 16px 0;max-width:1100px;margin:0 auto}
+  .section.active{display:block}
+  .days-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  @media (max-width:700px){.days-grid{grid-template-columns:1fr}}
+  .day-label{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--accent);text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);letter-spacing:0.5px}
+  .day-sub{font-size:11px;color:var(--text-dim);display:block;margin-top:3px;font-weight:400}
+  .flip-wrap{margin-bottom:10px;cursor:pointer}
+  .flip-inner{position:relative;width:100%}
+  .card-front{width:100%;border-radius:14px;padding:14px 16px;border:1px solid var(--border);background:var(--card);position:relative;transition:border-color .2s,box-shadow .2s,transform .1s}
+  .card-back{display:none}
+  .flip-wrap:hover .card-front{border-color:var(--accent);box-shadow:0 0 0 1px #4f9dd933}
+  .flip-wrap:active .card-front{transform:scale(0.98)}
+  #card-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+  #card-modal.active{display:flex}
+  #card-modal-inner{background:var(--card-back);border:1px solid var(--border);border-radius:16px;padding:20px 20px 16px;width:min(360px,100%);max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.6);animation:modalIn .2s ease}
+  @keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-close{position:absolute;top:10px;right:12px;font-size:16px;cursor:pointer;color:var(--text-muted);background:none;border:none;line-height:1;padding:4px;transition:color .15s}
+  .modal-close:hover{color:var(--text)}
+  .meal-type{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);font-weight:500;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .meal-type-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+  .dot-pull{background:#4f9dd9}
+  .dot-push{background:#e0a04e}
+  .dot-mob{background:#a07fc4}
+  .dot-rest{background:#51606e}
+  .meal-title{font-size:14px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:8px}
+  .meal-kcal{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--tag-bg);border:1px solid var(--border);padding:2px 9px;border-radius:100px}
+  .flip-hint{position:absolute;bottom:10px;right:12px;font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:3px}
+  .back-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;font-weight:500}
+  .portion-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);gap:8px}
+  .portion-row:last-child{border-bottom:none}
+  .portion-name{font-size:12.5px;color:var(--text);font-weight:400;flex:1}
+  .portion-amount{font-size:12px;color:var(--accent);font-weight:500;white-space:nowrap}
+  .recipe-divider{height:1px;background:var(--border);margin:12px 0 10px}
+  .recipe-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:500;margin-bottom:8px}
+  .recipe-step{display:flex;gap:10px;margin-bottom:7px;align-items:flex-start}
+  .recipe-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--tag-bg);border:1px solid var(--accent);color:var(--accent);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center}
+  .recipe-text{font-size:12.5px;line-height:1.6;color:var(--text);padding-top:1px}
+  .recipe-text strong{color:var(--accent-push);font-weight:500}
+  .recipe-text em{color:var(--accent);font-style:normal}
+  .recipe-note{font-size:12px;color:var(--text-muted);font-style:italic;margin-top:8px;line-height:1.5}
+  .info-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;margin-bottom:16px}
+  .info-card h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+  .cook-block{margin-bottom:26px}
+  .cook-block h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--accent-push);margin-bottom:10px}
+  .cook-step{display:flex;gap:14px;margin-bottom:12px;align-items:flex-start}
+  .step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--tag-bg);border:1px solid var(--accent);color:var(--accent);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center}
+  .step-text{font-size:13.5px;line-height:1.6;color:var(--text);padding-top:3px}
+  .step-text strong{color:var(--accent-push);font-weight:500}
+  .step-text em{color:var(--accent);font-style:normal}
+  .tip-box{background:#13202b;border:1px solid #25455a;border-radius:10px;padding:12px 16px;margin-top:10px;font-size:12.5px;color:var(--text-muted);line-height:1.6}
+  .tip-box::before{content:'💡 '}
+  .day-col.today .day-label{color:var(--accent-push)}
+  .today-badge{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#0e1217;background:var(--accent-push);border-radius:100px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  .past-header{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);font-weight:500;padding:24px 0 12px;border-top:1px solid var(--border);margin-top:8px;grid-column:1 / -1}
+  .day-col.past .day-label{color:var(--text-dim)}
+  .day-col.past .card-front{opacity:0.55}
+  .day-col.light .day-label{color:var(--accent-mob);border-bottom-color:var(--accent-mob)}
+  .light-banner{background:#231d2e;border:1px dashed var(--accent-mob);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#c9b8e6;line-height:1.55}
+  .light-banner strong{color:#ddccf2}
+  #ptr{position:fixed;top:-76px;left:50%;transform:translateX(-50%);width:44px;height:76px;z-index:999;pointer-events:none;opacity:0}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../../index.html">← Все недели</a>
+<header>
+  <h1>Неделя 1 · Калибровка</h1>
+  <p>25–31 мая 2026 · каждый день · подходами утром, днём и вечером · Чт и Вс полегче</p>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="showSection('days')">📅 Дни</button>
+  <button class="nav-btn" onclick="showSection('progress')">📈 Прогрессия</button>
+  <button class="nav-btn" onclick="showSection('tech')">🧰 Техника</button>
+</nav>
+
+<section class="section active" id="days">
+  <div class="days-grid">
+
+    <!-- ПОНЕДЕЛЬНИК 25 -->
+    <div class="day-col" data-date="2026-05-25">
+      <div class="day-label">Понедельник, 25 мая<span class="day-sub">5 блоков</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Утро · Подтягивания</div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">3 × 15-20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">15-20 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Хват на ширине плеч, плечи опустить <strong>от ушей вниз</strong>, дышать ровно.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Слезай <em>до</em> срыва хвата — копим запас, не до отказа.</div></div><div class="recipe-note">Тяжело? Меньше времени (3×10 сек). Легко? +5 сек.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>День · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">8</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Тело прямое как <strong>планка</strong>, руки на ширине плеч на стене, локти ~45°.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Грудь к стене и обратно <em>полностью</em>, пресс и ягодицы в тонусе.</div></div><div class="recipe-note">Тяжело? Шагни ближе к стене. Легко? Шагни дальше или опора ниже (стол).</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Вечер · Подтягивания</div><div class="meal-title">Активный вис (лопатки)</div><span class="meal-kcal">3 × 10-15 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Активный вис — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">10-15 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Из виса <strong>свести и опустить лопатки</strong> вниз-назад, корпус чуть напрячь.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Удержать, не раскачиваться. Локти всё время прямые. Это мостик к scapular pulls.</div></div><div class="recipe-note">Тяжело? Уменьши время или вернись к обычному вису.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>Вечер · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">8</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Тело прямое как <strong>планка</strong>, руки на ширине плеч на стене, локти ~45°.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Грудь к стене и обратно <em>полностью</em>, пресс и ягодицы в тонусе.</div></div><div class="recipe-note">Свежесть важнее. Между подходами полностью отдышись.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Перед сном · Мобилити</div><div class="meal-title">Запястья + плечи</div><span class="meal-kcal">3-4 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Мобилити — запястья и плечи</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">3-4 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья:</strong> ладони от себя и к себе по 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения + растяжка в дверном проёме 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Кошка-корова 30 сек для спины.</div></div><div class="recipe-note">Каждый день. Без боли.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ВТОРНИК 26 -->
+    <div class="day-col" data-date="2026-05-26">
+      <div class="day-label">Вторник, 26 мая<span class="day-sub">5 блоков</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Утро · Подтягивания</div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">3 × 15-20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">15-20 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Хват на ширине плеч, плечи опустить <strong>от ушей вниз</strong>, дышать ровно.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Слезай <em>до</em> срыва хвата — копим запас, не до отказа.</div></div><div class="recipe-note">Тяжело? Меньше времени (3×10 сек). Легко? +5 сек.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>День · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">8</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Тело прямое как <strong>планка</strong>, руки на ширине плеч на стене, локти ~45°.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Грудь к стене и обратно <em>полностью</em>, пресс и ягодицы в тонусе.</div></div><div class="recipe-note">Тяжело? Шагни ближе к стене. Легко? Шагни дальше.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Вечер · Подтягивания</div><div class="meal-title">Активный вис (лопатки)</div><span class="meal-kcal">3 × 10-15 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Активный вис — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">10-15 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Из виса <strong>свести и опустить лопатки</strong> вниз-назад, корпус чуть напрячь.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Удержать, не раскачиваться. Локти прямые.</div></div><div class="recipe-note">Тяжело? Уменьши время или обычный вис.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>Вечер · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">8</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Тело прямое как <strong>планка</strong>, локти ~45°.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Полный диапазон, без провала поясницы.</div></div><div class="recipe-note">Свежесть важнее. Полностью отдышись между подходами.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Перед сном · Мобилити</div><div class="meal-title">Запястья + плечи</div><span class="meal-kcal">3-4 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Мобилити — запястья и плечи</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">3-4 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья:</strong> ладони от себя и к себе по 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения + растяжка в дверном проёме 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Кошка-корова 30 сек.</div></div><div class="recipe-note">Каждый день. Без боли.</div></div>
+      </div></div>
+    </div>
+
+    <!-- СРЕДА 27 -->
+    <div class="day-col" data-date="2026-05-27">
+      <div class="day-label">Среда, 27 мая<span class="day-sub">5 блоков</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Утро · Подтягивания</div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">3 × 18-22 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">18-22 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Плечи <strong>от ушей вниз</strong>, дышать ровно.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Слезай <em>до</em> срыва хвата — запас, не отказ.</div></div><div class="recipe-note">Чуть прибавили время к началу недели. Тяжело — вернись к 15 сек.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>День · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 10</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">10</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Планка, локти ~45°, полный диапазон.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Если 10 даётся легко — на след. неделе пробуем от стола (P1).</div></div><div class="recipe-note">Запас 3-4 повтора в каждом подходе.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Вечер · Подтягивания</div><div class="meal-title">Активный вис (лопатки)</div><span class="meal-kcal">3 × 12 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Активный вис — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">12 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Лопатки</strong> вниз-назад, корпус напряжён.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Удержать ровно, без раскачки.</div></div><div class="recipe-note">Готовит спину к scapular pulls (попробуем в субботу).</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>Вечер · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 10</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">10</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Планка, полный диапазон.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Не до отказа — оставляй запас.</div></div><div class="recipe-note">Свежесть важнее количества.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Перед сном · Мобилити</div><div class="meal-title">Запястья + плечи</div><span class="meal-kcal">3-4 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Мобилити — запястья и плечи</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">3-4 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья:</strong> ладони от себя/к себе по 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения + дверной проём 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Кошка-корова 30 сек.</div></div><div class="recipe-note">Каждый день. Без боли.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ЧЕТВЕРГ 28 — ЛЁГКИЙ -->
+    <div class="day-col light" data-date="2026-05-28">
+      <div class="day-label">Четверг, 28 мая<span class="day-sub">лёгкий · 3 блока</span></div>
+      <div class="light-banner"><strong>Лёгкий день.</strong> Меньше объёма, упор на мобилити и восстановление.</div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Утро · Подтягивания</div><div class="meal-title">Вис (лёгкий)</div><span class="meal-kcal">2 × 15 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — лёгкий день</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">2</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">15 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Спокойно, плечи вниз. Сегодня <em>не стараемся</em> — даём телу отдохнуть.</div></div><div class="recipe-note">Если устал — пропусти, ничего страшного.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>День · Отжимания</div><div class="meal-title">Отжимания от стены (лёгкий)</div><span class="meal-kcal">2 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — лёгкий день</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">2</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">8</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Чистая планка, медленно и легко. Большой запас.</div></div><div class="recipe-note">Восстановительный объём, не нагрузка.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Перед сном · Мобилити</div><div class="meal-title">Запястья + плечи (дольше)</div><span class="meal-kcal">5 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Мобилити — упор дня</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">5 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья:</strong> растяжка по 30 сек в каждую сторону.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения, дверной проём, «доставание лопаток» 30 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Грудной отдел: раскрытие + кошка-корова 1 мин.</div></div><div class="recipe-note">Сегодня мобилити — главное блюдо.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ПЯТНИЦА 29 -->
+    <div class="day-col" data-date="2026-05-29">
+      <div class="day-label">Пятница, 29 мая<span class="day-sub">5 блоков</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Утро · Подтягивания</div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">3 × 18-22 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">18-22 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Плечи <strong>от ушей вниз</strong>, дышать ровно.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Слезай <em>до</em> срыва хвата.</div></div><div class="recipe-note">Тяжело? Назад к 15 сек.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>День · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 10</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">10</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Планка, локти ~45°, полный диапазон.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Запас 3-4 повтора.</div></div><div class="recipe-note">Легко всю неделю? Скажи мне — двинем на P1.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Вечер · Подтягивания</div><div class="meal-title">Активный вис (лопатки)</div><span class="meal-kcal">3 × 12 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Активный вис — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">12 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Лопатки</strong> вниз-назад, корпус напряжён.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Удержать без раскачки, локти прямые.</div></div><div class="recipe-note">Без боли в плечах.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>Вечер · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 10</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">10</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Планка, полный диапазон.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Не до отказа.</div></div><div class="recipe-note">Свежесть важнее.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Перед сном · Мобилити</div><div class="meal-title">Запястья + плечи</div><span class="meal-kcal">3-4 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Мобилити — запястья и плечи</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">3-4 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья:</strong> ладони от себя/к себе по 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения + дверной проём 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Кошка-корова 30 сек.</div></div><div class="recipe-note">Каждый день.</div></div>
+      </div></div>
+    </div>
+
+    <!-- СУББОТА 30 -->
+    <div class="day-col" data-date="2026-05-30">
+      <div class="day-label">Суббота, 30 мая<span class="day-sub">5 блоков</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Утро · Подтягивания</div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">3 × 20-25 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">20-25 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Плечи вниз, дышать. Это твой <strong>замер недели</strong> — попробуй удержать максимум в 1 подходе и запомни.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Остальные подходы — спокойно, до запаса.</div></div><div class="recipe-note">📏 Сколько секунд чистого виса вышло? Напиши мне.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>День · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 10-12</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">10-12</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Планка, полный диапазон. <strong>Замер:</strong> в 1 подходе сделай максимум чистых (без отказа) и запомни.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Остальные — до запаса 3-4.</div></div><div class="recipe-note">📏 Сколько чистых отжиманий от стены? Напиши мне.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Вечер · Подтягивания</div><div class="meal-title">Scapular pulls (проба)</div><span class="meal-kcal">3 × 5</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Scapular pulls — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">5</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Руки <strong>прямые</strong>, тянем тело вверх только лопатками (маленькая амплитуда).</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Пауза вверху 1 сек, <em>медленно</em> вниз.</div></div><div class="recipe-note">Не получается? Вернись к активному вису, попробуем позже. Без боли.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>Вечер · Отжимания</div><div class="meal-title">Отжимания от стены</div><span class="meal-kcal">3 × 10-12</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — как делать</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">3</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">10-12</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Планка, полный диапазон.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Спокойно, с запасом.</div></div><div class="recipe-note">Свежесть важнее количества.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Перед сном · Мобилити</div><div class="meal-title">Запястья + плечи</div><span class="meal-kcal">3-4 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Мобилити — запястья и плечи</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">3-4 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья:</strong> ладони от себя/к себе по 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения + дверной проём 20 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Кошка-корова 30 сек.</div></div><div class="recipe-note">Каждый день.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ВОСКРЕСЕНЬЕ 31 — ЛЁГКИЙ -->
+    <div class="day-col light" data-date="2026-05-31">
+      <div class="day-label">Воскресенье, 31 мая<span class="day-sub">лёгкий · 3 блока</span></div>
+      <div class="light-banner"><strong>Лёгкий день.</strong> Закрываем первую неделю спокойно. Напиши мне итоги — соберу неделю 2.</div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Утро · Подтягивания</div><div class="meal-title">Вис (лёгкий)</div><span class="meal-kcal">2 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — лёгкий день</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">2</span></div><div class="portion-row"><span class="portion-name">Время</span><span class="portion-amount">20 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Спокойно, плечи вниз. Без надрыва.</div></div><div class="recipe-note">Устал за неделю — можно пропустить.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>День · Отжимания</div><div class="meal-title">Отжимания от стены (лёгкий)</div><span class="meal-kcal">2 × 10</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания от стены — лёгкий день</div><div class="portion-row"><span class="portion-name">Подходы</span><span class="portion-amount">2</span></div><div class="portion-row"><span class="portion-name">Повторы</span><span class="portion-amount">10</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Техника</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Чисто и легко, большой запас.</div></div><div class="recipe-note">Восстановление, не нагрузка.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Перед сном · Мобилити</div><div class="meal-title">Запястья + плечи (дольше)</div><span class="meal-kcal">5 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Мобилити — упор дня</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">5 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья:</strong> растяжка по 30 сек.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения, дверной проём, лопатки 30 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Грудной отдел + кошка-корова 1 мин.</div></div><div class="recipe-note">📏 Не забудь написать итоги недели: что удалось, что тяжело, замеры виса и отжиманий.</div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<section class="section" id="progress">
+  <div class="info-card">
+    <h2>Где ты сейчас</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Неделя 1 — калибровка и техника</p>
+    <div class="portion-row"><span class="portion-name">Отжимания (PUSH)</span><span class="portion-amount" style="color:var(--accent-push)">P0 · от стены</span></div>
+    <div class="portion-row"><span class="portion-name">Подтягивания (PULL)</span><span class="portion-amount">H0 · вис (~20 сек)</span></div>
+    <div class="recipe-divider"></div>
+    <div class="recipe-label">Ближайшая цель</div>
+    <div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>PUSH:</strong> 3×8-10 от стены легко и чисто → переходим к P1 (от стола).</div></div>
+    <div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>PULL:</strong> вис 3×30 сек уверенно → активный вис и scapular каждый день.</div></div>
+    <div class="recipe-note">📏 На этой неделе сделай 1 замер без отказа: сколько чистых отжиманий от стены и сколько секунд чистого виса. Напиши мне — внесу в прогресс и рассчитаю рабочие подходы (40-60%).</div>
+  </div>
+</section>
+
+<section class="section" id="tech">
+  <div class="info-card">
+    <h2>Техника недели</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Пять движений — разбор по шагам. Главный принцип: вне отказа, чисто, с запасом.</p>
+
+    <div class="cook-block">
+      <h3>Вис (H0)</h3>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text">Хват сверху на ширине плеч. <strong>Опусти плечи</strong> от ушей вниз — не виси «мешком».</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text">Дыши ровно, тело расслаблено. Слезай <em>до</em> срыва хвата — копим запас.</div></div>
+      <div class="tip-box">Хват — частый лимит на старте. Это нормально, он быстро крепнет.</div>
+    </div>
+
+    <div class="cook-block">
+      <h3>Активный вис (H1)</h3>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text">Из обычного виса <strong>сведи и опусти лопатки</strong> вниз-назад, корпус чуть напряги.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text">Локти остаются <em>прямыми</em> — это не подтягивание, а работа лопаток. Удержи положение.</div></div>
+      <div class="tip-box">Это база силы тяги. Научишься здесь — дальше будут scapular pulls и негативы.</div>
+    </div>
+
+    <div class="cook-block">
+      <h3>Scapular pulls (H2)</h3>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text">Руки прямые, тянем тело вверх <strong>только лопатками</strong> — амплитуда маленькая (несколько см).</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text">Пауза вверху 1 сек, <em>медленно</em> вниз. 5 чистых важнее 10 рывками.</div></div>
+      <div class="tip-box">Пробуем в субботу. Не пошло — спокойно возвращаемся к активному вису.</div>
+    </div>
+
+    <div class="cook-block">
+      <h3>Отжимания от стены (P0)</h3>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text">Тело — прямая <strong>планка</strong> от пяток до головы. Руки на стене на ширине плеч.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text">Локти ~45° к корпусу (не в стороны). Грудь к стене и обратно <em>полностью</em>.</div></div>
+      <div class="tip-box">Регулируй сложность шагами: ближе к стене — легче, дальше — тяжелее. Стало совсем легко → опора ниже (стол), это уже P1.</div>
+    </div>
+
+    <div class="cook-block">
+      <h3>Мобилити (каждый день)</h3>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text"><strong>Запястья:</strong> ладони от себя и к себе, мягко тянем по 20-30 сек. Готовит к отжиманиям.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text"><strong>Плечи:</strong> вращения, растяжка в дверном проёме, «доставание лопаток». Здоровье плеч под вис.</div></div>
+      <div class="tip-box">Любая боль (не усталость) = стоп и скажи мне. Заменим движение и добавим мобилизацию.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Pull-to-refresh -->
+<div id="ptr" aria-hidden="true">
+  <svg viewBox="0 0 44 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect id="ptr-bar" x="6" y="40" width="32" height="5" rx="2.5" fill="#4f9dd9"/>
+    <circle id="ptr-head" cx="22" cy="56" r="6" fill="#e0a04e" opacity="0"/>
+  </svg>
+</div>
+
+<div id="card-modal" onclick="if(event.target===this)closeModal()">
+  <div id="card-modal-inner"></div>
+</div>
+
+<script>
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+  function openCard(el) {
+    const back = el.querySelector('.card-back').innerHTML;
+    document.getElementById('card-modal-inner').innerHTML =
+      '<button class="modal-close" onclick="closeModal()">✕</button>' + back;
+    document.getElementById('card-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    document.getElementById('card-modal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  (function organizeDays() {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const grid = document.querySelector('.days-grid');
+    const cols = Array.from(grid.querySelectorAll('.day-col'));
+    const past = [], present = [], future = [];
+    cols.forEach(col => {
+      const d = col.dataset.date;
+      if (!d) { future.push(col); return; }
+      if (d < todayStr) past.push(col);
+      else if (d === todayStr) present.push(col);
+      else future.push(col);
+    });
+    present.forEach(col => {
+      col.classList.add('today');
+      const label = col.querySelector('.day-label');
+      if (label) label.insertAdjacentHTML('beforeend', '<span class="today-badge">Сегодня</span>');
+    });
+    past.forEach(col => col.classList.add('past'));
+    cols.forEach(c => c.remove());
+    [...present, ...future].forEach(c => grid.appendChild(c));
+    if (past.length > 0) {
+      const sep = document.createElement('div');
+      sep.className = 'past-header';
+      sep.textContent = 'Прошедшие дни';
+      grid.appendChild(sep);
+      past.forEach(c => grid.appendChild(c));
+    }
+  })();
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/push_pull-ups/sw.js', { scope: '/push_pull-ups/' });
+  }
+  (function () {
+    const ptr = document.getElementById('ptr');
+    if (!ptr) return;
+    const head = document.getElementById('ptr-head');
+    const THRESHOLD = 82;
+    let startY = 0, delta = 0, active = false;
+    function draw(p) {
+      ptr.style.top = (-76 + p * 90) + 'px';
+      ptr.style.opacity = Math.min(p * 2.5, 1);
+      head.style.opacity = Math.max(0, (p - 0.5) / 0.5);
+    }
+    function retract() {
+      ptr.style.transition = 'top .28s ease, opacity .22s ease';
+      ptr.style.top = '-76px'; ptr.style.opacity = '0';
+      setTimeout(() => { ptr.style.cssText = ''; head.style.opacity = '0'; }, 300);
+    }
+    document.addEventListener('touchstart', e => {
+      if (window.scrollY !== 0) return;
+      startY = e.touches[0].clientY; active = true;
+      ptr.style.cssText = 'transition:none';
+    }, { passive: true });
+    document.addEventListener('touchmove', e => {
+      if (!active) return;
+      delta = Math.max(0, e.touches[0].clientY - startY);
+      draw(Math.min(delta / THRESHOLD, 1));
+    }, { passive: true });
+    document.addEventListener('touchend', () => {
+      if (!active) return; active = false;
+      if (delta > THRESHOLD) { location.reload(); } else { retract(); }
+      delta = 0;
+    });
+  })();
+</script>
+
+</body>
+</html>
