@@ -1,0 +1,12 @@
+{
+  "name": "Отжимания и подтягивания",
+  "short_name": "Push·Pull",
+  "start_url": "/push_pull-ups/",
+  "scope": "/push_pull-ups/",
+  "display": "standalone",
+  "background_color": "#0e1217",
+  "theme_color": "#0e1217",
+  "icons": [
+    { "src": "/push_pull-ups/icons/icon.svg", "type": "image/svg+xml", "sizes": "any", "purpose": "any maskable" }
+  ]
+}
