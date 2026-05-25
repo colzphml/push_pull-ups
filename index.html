@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Отжимания и подтягивания — программа</title>
+<link rel="manifest" href="/push_pull-ups/manifest.json">
+<meta name="theme-color" content="#0e1217">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Push·Pull">
+<link rel="apple-touch-icon" href="/push_pull-ups/icons/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1217; --surface:#161d26; --card:#1b232e; --card-back:#1f2a37;
+    --border:#2c3a48; --accent:#4f9dd9; --accent-push:#e0a04e; --accent-mob:#a07fc4;
+    --text:#e6edf3; --text-muted:#8b9bab; --text-dim:#51606e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:0 0 60px}
+  body{padding-bottom:env(safe-area-inset-bottom,16px)}
+  header{padding:40px 24px 0;text-align:center}
+  header{padding-top:max(40px,calc(env(safe-area-inset-top) + 16px))}
+  header::after{content:'';display:block;width:60px;height:2px;background:var(--accent);margin:14px auto 0;border-radius:2px}
+  header h1{font-family:'Playfair Display',serif;font-size:clamp(22px,5vw,36px);color:var(--text)}
+  header p{margin-top:6px;color:var(--text-muted);font-size:13px}
+  main{max-width:700px;margin:40px auto 0;padding:0 20px}
+  h2{font-family:'Playfair Display',serif;font-size:18px;color:var(--accent);margin-bottom:16px}
+  .menu-list{display:flex;flex-direction:column;gap:10px}
+  .menu-card{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;text-decoration:none;color:var(--text);transition:border-color .2s,box-shadow .2s}
+  .menu-card:hover{border-color:var(--accent);box-shadow:0 0 0 1px #4f9dd933}
+  .menu-card-left .week{font-size:14px;font-weight:500}
+  .menu-card-left .days{font-size:12px;color:var(--text-muted);margin-top:3px}
+  .menu-card-right{font-size:12px;color:var(--accent-push);font-weight:500;white-space:nowrap}
+  .empty{color:var(--text-dim);font-size:13px;text-align:center;padding:40px 0}
+  .intro{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:22px;font-size:13px;color:var(--text-muted);line-height:1.6}
+  .intro b{color:var(--text)}
+  #ptr{position:fixed;top:-76px;left:50%;transform:translateX(-50%);width:44px;height:76px;z-index:999;pointer-events:none;opacity:0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Отжимания и подтягивания</h1>
+  <p>Программа с нуля · по неделям · подходами в течение дня</p>
+</header>
+<main>
+  <div class="intro">
+    Режим <b>Greasing the Groove</b>: лёгкие подходы вне отказа, разнесённые по дню.
+    Жми неделю → внутри дни с карточками (утро/день/вечер). Нажми карточку — детали и техника.
+  </div>
+  <h2>Недели</h2>
+  <div class="menu-list">
+
+    <a class="menu-card" href="weeks/2026/week_2026-05-25.html">
+      <div class="menu-card-left">
+        <div class="week">Неделя 25 мая 2026 · №1</div>
+        <div class="days">Калибровка · P0 отжимания от стены · H0 вис · мобилити · каждый день, Чт и Вс полегче</div>
+      </div>
+      <div class="menu-card-right">→</div>
+    </a>
+
+  </div>
+</main>
+
+<!-- Pull-to-refresh -->
+<div id="ptr" aria-hidden="true">
+  <svg viewBox="0 0 44 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect id="ptr-bar" x="6" y="40" width="32" height="5" rx="2.5" fill="#4f9dd9"/>
+    <circle id="ptr-head" cx="22" cy="56" r="6" fill="#e0a04e" opacity="0"/>
+  </svg>
+</div>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/push_pull-ups/sw.js', { scope: '/push_pull-ups/' });
+  }
+  // Pull-to-refresh (минимальный)
+  (function(){
+    const ptr=document.getElementById('ptr');
+    if(!ptr) return;
+    const head=document.getElementById('ptr-head');
+    const THRESHOLD=82; let startY=0,delta=0,active=false;
+    function draw(p){ ptr.style.top=(-76+p*90)+'px'; ptr.style.opacity=Math.min(p*2.5,1); head.style.opacity=Math.max(0,(p-0.5)/0.5); }
+    function retract(){ ptr.style.transition='top .28s ease,opacity .22s ease'; ptr.style.top='-76px'; ptr.style.opacity='0'; setTimeout(()=>{ptr.style.cssText='';head.style.opacity='0';},300); }
+    document.addEventListener('touchstart',e=>{ if(window.scrollY!==0)return; startY=e.touches[0].clientY; active=true; ptr.style.cssText='transition:none'; },{passive:true});
+    document.addEventListener('touchmove',e=>{ if(!active)return; delta=Math.max(0,e.touches[0].clientY-startY); draw(Math.min(delta/THRESHOLD,1)); },{passive:true});
+    document.addEventListener('touchend',()=>{ if(!active)return; active=false; if(delta>THRESHOLD){ location.reload(); } else { retract(); } delta=0; });
+  })();
+</script>
+</body>
+</html>
