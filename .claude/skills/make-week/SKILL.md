@@ -11,8 +11,9 @@ description: Генерирует следующую недельную прог
 
 ## ШАГ 1 — Прочитать всё (параллельно)
 ```
-Read: profile.json            # текущие уровни push/pull, базовые цифры, вес
+Read: profile.json            # текущие уровни push/pull/cold, базовые цифры, вес
 Read: plan/progression.md     # лестницы, milestones, техника, правила GtG
+Read: plan/cold.md            # лестница закаливания C0–C7, безопасность, сезонная карта
 Read: equipment.md            # турник, резинки, опоры
 ```
 
@@ -46,16 +47,24 @@ sqlite3 history/training.db "SELECT date,block,exercise,planned,done,felt,note F
 - Рабочие подходы держать на 40-60% от текущего максимума (по `progress`).
 - Резинки только когда есть (см. profile.json/equipment.md) — иначе pull остаётся
   на висе/активном висе/scapular. Резинки крепим ТОЛЬКО на турник.
+- Закалка: ступень из `profile.json.cold` + раздел «Как скилл выбирает закалку»
+  в `plan/cold.md`. Активные правила `health` (−1/−2, болезнь) → закалки в неделе
+  НЕТ, а тренировочная неделя = мягкий рестарт (объёмы последней реально
+  выполненной недели, без прогрессии).
 
 ## ШАГ 4 — Разложить неделю
 - 4-5 блоков в день по окнам Утро/День/Вечер(+перед сном мобилити). push и pull чередовать.
 - 1-2 лёгких дня (короткий вис + мобилити, отжимания вдвое меньше).
 - Каждый день — мобилити запястий и плеч.
+- +1 карточка закалки в день (блок `cold`) в окне, где душ реально случается;
+  содержание — текущая ступень из plan/cold.md. В лёгкие дни закалка остаётся
+  (это не тренировка); минимум «15 сек = день засчитан».
 
 ## ШАГ 5 — Создать HTML недели
 **Имя:** `weeks/2026/week_YYYY-MM-DD.html` (YYYY-MM-DD = понедельник).
 - Скопируй структуру и стили из последней недели `weeks/2026/week_2026-05-25.html`
-  (НЕ изобретай дизайн): тема, точки `dot-pull/dot-push/dot-mob`, nav
+  (НЕ изобретай дизайн): тема, точки `dot-pull/dot-push/dot-mob` (+ `dot-cold`,
+  ледяной циан `#5ec8d8`, стиль по аналогии с `dot-mob`), nav
   (Дни/Прогрессия/Техника), флип-модалка, PTR, регистрация SW `/push_pull-ups/sw.js`.
 - На каждой колонке дня — `data-date="YYYY-MM-DD"`.
 - В карточке: лицо (точка+окно+блок, суть «3×N»), оборот (подходы/повторы/время,
@@ -68,7 +77,8 @@ sqlite3 history/training.db "SELECT date,block,exercise,planned,done,felt,note F
 sqlite3 history/training.db "
 INSERT INTO training_weeks (week_start,week_end,filename,push_level,pull_level,focus,summary)
 VALUES ('YYYY-MM-DD','YYYY-MM-DD','weeks/2026/week_YYYY-MM-DD.html','P?','H?','фокус','краткий итог');"
-WEEK_ID=$(sqlite3 history/training.db "SELECT last_insert_rowid();")
+# ВАЖНО: НЕ last_insert_rowid() — это новый процесс sqlite3, он вернёт 0!
+WEEK_ID=$(sqlite3 history/training.db "SELECT id FROM training_weeks WHERE week_start='YYYY-MM-DD';")
 # по каждому блоку дня:
 sqlite3 history/training.db "
 INSERT INTO exercise_log (week_id,date,window,block,exercise,planned)
@@ -89,7 +99,7 @@ VALUES ($WEEK_ID,'YYYY-MM-DD','утро','pull','вис','3×20 сек');"
 ```
 
 ## ШАГ 8 — Обновить profile.json при смене уровней/рекордов
-Если перешли уровень — обнови `push.level`/`pull.level` и `updated`.
+Если перешли уровень — обнови `push.level`/`pull.level`/`cold.level` и `updated`.
 
 ## ШАГ 9 — Git
 ```bash
@@ -102,7 +112,7 @@ git push origin main   # если remote настроен
 ```
 ✅ Неделя [дата] готова!
 📄 Файл:   weeks/2026/week_[...].html
-💪 PUSH:   [уровень]   🤸 PULL: [уровень]
+💪 PUSH:   [уровень]   🤸 PULL: [уровень]   ❄️ COLD: [ступень]
 🎯 Фокус:  [...]
 🛟 Лёгкие дни: [...]
 🌐 index.html обновлён · Пуш: ✅/❌
@@ -123,3 +133,6 @@ git push origin main   # если remote настроен
 | «во вторник пропустил день-блок» | `UPDATE exercise_log SET done=0,note='пропуск' WHERE week_id=(SELECT MAX(id) FROM training_weeks) AND date='YYYY-MM-DD' AND window='день';` |
 | «покажи прогресс» | `SELECT metric,value,recorded_at FROM progress ORDER BY metric,recorded_at;` |
 | «обнови вес 126» | обнови `profile.json` → `bodyweight_kg`; `INSERT INTO progress (metric,value,note) VALUES ('bodyweight_kg',126,'user');` |
+| «холодный финиш 45 сек спокойно» | `INSERT INTO progress (metric,value,note) VALUES ('cold_finish_sec',45,'user');` |
+| «вода из крана 14°» | `INSERT INTO progress (metric,value,note) VALUES ('cold_water_temp_c',14,'user');` |
+| «заболел/простыл» | `INSERT INTO training_rules (category,name,rating,note,valid_until,source) VALUES ('health','болезнь',-1,'стоп тренировки и закалку; потом мягкий рестарт',date('now','+10 days'),'user');` |
