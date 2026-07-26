@@ -512,6 +512,19 @@ test('syncWeek сдаётся после трёх конфликтов подр�
   }), { name: 'ConflictError' });
 });
 
+test('syncWeek переживает валидный JSON неправильной формы', async () => {
+  // У голого массива поле .entries — метод прототипа: truthy, но не список записей.
+  const fetchFn = fakeFetch([
+    { status: 200, body: { content: toBase64('[]'), sha: 'a' } },
+    { status: 200, body: { content: { sha: 'b' } } },
+  ]);
+  const merged = await syncWeek({
+    fetchFn, token: 'tok', path: 'p.json', weekStart: '2026-07-27',
+    localEntries: [entry], message: 'log',
+  });
+  assert.equal(merged.length, 1);
+});
+
 test('syncWeek переживает битый JSON в репозитории, не теряя локальные записи', async () => {
   const fetchFn = fakeFetch([
     { status: 200, body: { content: toBase64('{ это не json'), sha: 'a' } },
@@ -618,7 +631,10 @@ export async function syncWeek({ fetchFn, token, path, weekStart, localEntries, 
     let remoteEntries = [];
     if (remote) {
       try {
-        remoteEntries = JSON.parse(remote.text).entries || [];
+        const parsed = JSON.parse(remote.text);
+        // Проверяем именно массив: у голого `[]` поле .entries — это метод прототипа,
+        // он truthy и проскочил бы проверку на существование, уронив слияние.
+        remoteEntries = Array.isArray(parsed?.entries) ? parsed.entries : [];
       } catch {
         // Битый файл в репозитории не должен съесть локальные отметки — перезаписываем его.
         remoteEntries = [];
@@ -641,7 +657,7 @@ export async function syncWeek({ fetchFn, token, path, weekStart, localEntries, 
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 35 тестов суммарно
+Expected: PASS, 36 тестов суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -847,7 +863,7 @@ export class Store {
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 45 тестов суммарно
+Expected: PASS, 46 тестов суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -1266,7 +1282,7 @@ self.addEventListener('fetch', e => {
 - [ ] **Step 4: Проверить, что модульные тесты не сломались**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 45 тестов
+Expected: PASS, 46 тестов
 
 - [ ] **Step 5: Поднять локальный сервер и проверить вручную**
 
