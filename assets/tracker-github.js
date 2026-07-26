@@ -83,7 +83,10 @@ export async function syncWeek({ fetchFn, token, path, weekStart, localEntries, 
     let remoteEntries = [];
     if (remote) {
       try {
-        remoteEntries = JSON.parse(remote.text).entries || [];
+        const parsed = JSON.parse(remote.text);
+        // Проверяем именно массив: у голого `[]` поле .entries — это метод прототипа,
+        // он truthy и проскочил бы проверку на существование, уронив слияние.
+        remoteEntries = Array.isArray(parsed?.entries) ? parsed.entries : [];
       } catch {
         // Битый файл в репозитории не должен съесть локальные отметки — перезаписываем его.
         remoteEntries = [];

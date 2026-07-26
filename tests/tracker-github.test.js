@@ -140,6 +140,19 @@ test('syncWeek сдаётся после трёх конфликтов подр�
   }), { name: 'ConflictError' });
 });
 
+test('syncWeek переживает валидный JSON неправильной формы', async () => {
+  // У голого массива поле .entries — метод прототипа: truthy, но не список записей.
+  const fetchFn = fakeFetch([
+    { status: 200, body: { content: toBase64('[]'), sha: 'a' } },
+    { status: 200, body: { content: { sha: 'b' } } },
+  ]);
+  const merged = await syncWeek({
+    fetchFn, token: 'tok', path: 'p.json', weekStart: '2026-07-27',
+    localEntries: [entry], message: 'log',
+  });
+  assert.equal(merged.length, 1);
+});
+
 test('syncWeek переживает битый JSON в репозитории, не теряя локальные записи', async () => {
   const fetchFn = fakeFetch([
     { status: 200, body: { content: toBase64('{ это не json'), sha: 'a' } },
