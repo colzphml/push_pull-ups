@@ -50,7 +50,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test tests/"
+    "test": "node --test tests/*.test.js"
   }
 }
 ```
@@ -146,11 +146,19 @@ test('weekStats на пустом логе возвращает нули', () =>
   const stats = weekStats([], ['2026-07-27']);
   assert.deepEqual(stats, { hitDays: 0, totalDays: 1, coldFinishes: 0 });
 });
+
+test('weekStats игнорирует записи с датами вне запрошенной недели', () => {
+  const entries = [
+    { ...base, date: '2099-01-01', block: 'pull', done: 1 },
+    { ...base, date: '2099-01-01', block: 'cold', done: 1 },
+  ];
+  assert.deepEqual(weekStats(entries, ['2026-07-27']), { hitDays: 0, totalDays: 1, coldFinishes: 0 });
+});
 ```
 
 - [ ] **Step 3: Убедиться, что тесты падают**
 
-Run: `node --test tests/`
+Run: `node --test tests/*.test.js`
 Expected: FAIL — `Cannot find module '.../assets/tracker-core.js'`
 
 - [ ] **Step 4: Реализовать `assets/tracker-core.js`**
@@ -191,15 +199,17 @@ export function pendingEntries(entries, syncedAt) {
 
 /** Статистика недели: попадаемость по дням и отдельный счётчик финишей закалки. */
 export function weekStats(entries, dates) {
+  const weekDates = new Set(dates);
   const hitDates = new Set();
   let coldFinishes = 0;
   for (const entry of entries) {
-    if (entry.done !== 1) continue;
+    // Обе метрики считаем строго по запрошенной неделе, иначе они разъезжаются.
+    if (entry.done !== 1 || !weekDates.has(entry.date)) continue;
     if (entry.block === 'cold') coldFinishes += 1;
     else if (HIT_BLOCKS.has(entry.block)) hitDates.add(entry.date);
   }
   return {
-    hitDays: dates.filter(d => hitDates.has(d)).length,
+    hitDays: hitDates.size,
     totalDays: dates.length,
     coldFinishes,
   };
@@ -208,8 +218,8 @@ export function weekStats(entries, dates) {
 
 - [ ] **Step 5: Убедиться, что тесты проходят**
 
-Run: `node --test tests/`
-Expected: PASS, 12 тестов
+Run: `node --test tests/*.test.js`
+Expected: PASS, 13 тестов
 
 - [ ] **Step 6: Коммит**
 
@@ -325,8 +335,8 @@ export function isTrackable(block) {
 
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
-Run: `node --test tests/`
-Expected: PASS, 20 тестов суммарно
+Run: `node --test tests/*.test.js`
+Expected: PASS, 21 тест суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -630,8 +640,8 @@ export async function syncWeek({ fetchFn, token, path, weekStart, localEntries, 
 
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
-Run: `node --test tests/`
-Expected: PASS, 34 теста суммарно
+Run: `node --test tests/*.test.js`
+Expected: PASS, 35 тестов суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -836,8 +846,8 @@ export class Store {
 
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
-Run: `node --test tests/`
-Expected: PASS, 44 теста суммарно
+Run: `node --test tests/*.test.js`
+Expected: PASS, 45 тестов суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -1255,8 +1265,8 @@ self.addEventListener('fetch', e => {
 
 - [ ] **Step 4: Проверить, что модульные тесты не сломались**
 
-Run: `node --test tests/`
-Expected: PASS, 44 теста
+Run: `node --test tests/*.test.js`
+Expected: PASS, 45 тестов
 
 - [ ] **Step 5: Поднять локальный сервер и проверить вручную**
 
