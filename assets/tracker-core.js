@@ -33,15 +33,17 @@ export function pendingEntries(entries, syncedAt) {
 
 /** Статистика недели: попадаемость по дням и отдельный счётчик финишей закалки. */
 export function weekStats(entries, dates) {
+  const weekDates = new Set(dates);
   const hitDates = new Set();
   let coldFinishes = 0;
   for (const entry of entries) {
-    if (entry.done !== 1) continue;
+    // Обе метрики считаем строго по запрошенной неделе, иначе они разъезжаются.
+    if (entry.done !== 1 || !weekDates.has(entry.date)) continue;
     if (entry.block === 'cold') coldFinishes += 1;
     else if (HIT_BLOCKS.has(entry.block)) hitDates.add(entry.date);
   }
   return {
-    hitDays: dates.filter(d => hitDates.has(d)).length,
+    hitDays: hitDates.size,
     totalDays: dates.length,
     coldFinishes,
   };

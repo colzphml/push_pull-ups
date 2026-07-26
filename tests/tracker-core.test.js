@@ -84,3 +84,11 @@ test('weekStats на пустом логе возвращает нули', () =>
   const stats = weekStats([], ['2026-07-27']);
   assert.deepEqual(stats, { hitDays: 0, totalDays: 1, coldFinishes: 0 });
 });
+
+test('weekStats игнорирует записи с датами вне запрошенной недели', () => {
+  const entries = [
+    { ...base, date: '2099-01-01', block: 'pull', done: 1 },
+    { ...base, date: '2099-01-01', block: 'cold', done: 1 },
+  ];
+  assert.deepEqual(weekStats(entries, ['2026-07-27']), { hitDays: 0, totalDays: 1, coldFinishes: 0 });
+});
