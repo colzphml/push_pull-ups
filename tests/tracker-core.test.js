@@ -1,0 +1,86 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { entryKey, mergeEntries, pendingEntries, weekStats } from '../assets/tracker-core.js';
+
+const base = {
+  date: '2026-07-27', window: 'утро', block: 'pull',
+  exercise: 'вис на перекладине', planned: '3 × 20-25 сек',
+  done: 1, actual: '3 × 20 сек', felt: 'норм', note: '',
+  updated_at: '2026-07-27T08:00:00.000Z', device: 'phone',
+};
+
+test('entryKey собирает ключ из даты, блока и упражнения', () => {
+  assert.equal(entryKey(base), '2026-07-27|pull|вис на перекладине');
+});
+
+test('entryKey нечувствителен к регистру и лишним пробелам в названии', () => {
+  assert.equal(entryKey({ ...base, exercise: '  Вис На Перекладине ' }), '2026-07-27|pull|вис на перекладине');
+});
+
+test('mergeEntries добавляет записи, которых нет на той стороне', () => {
+  const remote = [base];
+  const local = [{ ...base, date: '2026-07-28' }];
+  const merged = mergeEntries(remote, local);
+  assert.equal(merged.length, 2);
+});
+
+test('mergeEntries при конфликте оставляет запись с более поздним updated_at', () => {
+  const older = { ...base, note: 'старое', updated_at: '2026-07-27T08:00:00.000Z' };
+  const newer = { ...base, note: 'новое', updated_at: '2026-07-27T09:00:00.000Z' };
+  assert.equal(mergeEntries([older], [newer])[0].note, 'новое');
+  assert.equal(mergeEntries([newer], [older])[0].note, 'новое');
+});
+
+test('mergeEntries не мутирует входные массивы', () => {
+  const remote = [base];
+  const local = [{ ...base, updated_at: '2026-07-27T09:00:00.000Z' }];
+  mergeEntries(remote, local);
+  assert.equal(remote.length, 1);
+  assert.equal(remote[0].updated_at, '2026-07-27T08:00:00.000Z');
+});
+
+test('mergeEntries сортирует результат по дате', () => {
+  const merged = mergeEntries([{ ...base, date: '2026-07-30' }], [{ ...base, date: '2026-07-28' }]);
+  assert.deepEqual(merged.map(e => e.date), ['2026-07-28', '2026-07-30']);
+});
+
+test('pendingEntries возвращает всё, если синхронизации ещё не было', () => {
+  assert.equal(pendingEntries([base], null).length, 1);
+});
+
+test('pendingEntries отбрасывает записи старее последней синхронизации', () => {
+  const synced = '2026-07-27T08:30:00.000Z';
+  const fresh = { ...base, date: '2026-07-28', updated_at: '2026-07-27T09:00:00.000Z' };
+  const result = pendingEntries([base, fresh], synced);
+  assert.deepEqual(result.map(e => e.date), ['2026-07-28']);
+});
+
+test('weekStats считает день попаданием при любом done=1 в push/pull/mob', () => {
+  const dates = ['2026-07-27', '2026-07-28'];
+  const entries = [
+    { ...base, date: '2026-07-27', block: 'mob', done: 1 },
+    { ...base, date: '2026-07-28', block: 'pull', done: 0 },
+  ];
+  const stats = weekStats(entries, dates);
+  assert.equal(stats.hitDays, 1);
+  assert.equal(stats.totalDays, 2);
+});
+
+test('weekStats не считает попаданием день, где сделана только закалка', () => {
+  const entries = [{ ...base, block: 'cold', done: 1 }];
+  assert.equal(weekStats(entries, ['2026-07-27']).hitDays, 0);
+});
+
+test('weekStats считает финиши закалки отдельным счётчиком', () => {
+  const entries = [
+    { ...base, date: '2026-07-27', block: 'cold', done: 1 },
+    { ...base, date: '2026-07-28', block: 'cold', done: 1 },
+    { ...base, date: '2026-07-29', block: 'cold', done: 0 },
+  ];
+  assert.equal(weekStats(entries, ['2026-07-27', '2026-07-28', '2026-07-29']).coldFinishes, 2);
+});
+
+test('weekStats на пустом логе возвращает нули', () => {
+  const stats = weekStats([], ['2026-07-27']);
+  assert.deepEqual(stats, { hitDays: 0, totalDays: 1, coldFinishes: 0 });
+});
