@@ -1568,7 +1568,9 @@ for s in skipped:
 PYEOF
 ```
 
-Expected: `заполнено: 28`, список несопоставленных пуст.
+Expected: `заполнено: 26`, список несопоставленных пуст.
+(26 — проверенное число: в базе за эту неделю mob 7, pull 6, push 6, cold 7, и столько же
+отслеживаемых карточек в HTML.)
 
 Если что-то не сопоставилось — разобрать вручную, не оставлять молча.
 
@@ -1677,7 +1679,7 @@ sqlite3 history/training.db "SELECT COUNT(*) FROM exercise_log WHERE actual IS N
 node --test tests/*.test.js
 ```
 
-Expected: `ok` и `267`; `card_title` заполнен у 28 строк; `actual` — у 0; тесты 53/53.
+Expected: `ok` и `267`; `card_title` заполнен у 26 строк; `actual` — у 0; тесты 53/53.
 
 - [ ] **Step 9: Коммит**
 
