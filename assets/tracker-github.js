@@ -75,23 +75,31 @@ export async function writeFile(fetchFn, token, path, text, sha, message) {
   return { sha: data.content.sha };
 }
 
+/** Разбор содержимого файла лога. Непригодное содержимое трактуем как пустой список. */
+function parseEntries(text) {
+  try {
+    const parsed = JSON.parse(text);
+    // Проверяем именно массив: у голого `[]` поле .entries — это метод прототипа,
+    // он truthy и проскочил бы проверку на существование, уронив слияние.
+    return Array.isArray(parsed?.entries) ? parsed.entries : [];
+  } catch {
+    // Битый файл в репозитории не должен съесть локальные отметки — перезаписываем его.
+    return [];
+  }
+}
+
+/** Только чтение: подтянуть отметки, сделанные с другого устройства. Ничего не пишет. */
+export async function pullWeek({ fetchFn, token, path }) {
+  const remote = await readFile(fetchFn, token, path);
+  return remote ? parseEntries(remote.text) : [];
+}
+
 /** Читаем актуальный файл, вливаем локальные изменения, пишем обратно. При конфликте — заново. */
 export async function syncWeek({ fetchFn, token, path, weekStart, localEntries, message }) {
   let lastError = null;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     const remote = await readFile(fetchFn, token, path);
-    let remoteEntries = [];
-    if (remote) {
-      try {
-        const parsed = JSON.parse(remote.text);
-        // Проверяем именно массив: у голого `[]` поле .entries — это метод прототипа,
-        // он truthy и проскочил бы проверку на существование, уронив слияние.
-        remoteEntries = Array.isArray(parsed?.entries) ? parsed.entries : [];
-      } catch {
-        // Битый файл в репозитории не должен съесть локальные отметки — перезаписываем его.
-        remoteEntries = [];
-      }
-    }
+    const remoteEntries = remote ? parseEntries(remote.text) : [];
     const merged = mergeEntries(remoteEntries, localEntries);
     const body = `${JSON.stringify({ week_start: weekStart, entries: merged }, null, 2)}\n`;
     try {

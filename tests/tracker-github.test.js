@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  toBase64, fromBase64, readFile, writeFile, syncWeek, ConflictError, AuthError,
+  toBase64, fromBase64, readFile, writeFile, pullWeek, syncWeek, ConflictError, AuthError,
 } from '../assets/tracker-github.js';
 
 /** Фейковый fetch: отдаёт ответы из очереди и записывает полученные запросы. */
@@ -138,6 +138,25 @@ test('syncWeek сдаётся после трёх конфликтов подр�
     fetchFn, token: 'tok', path: 'p.json', weekStart: '2026-07-27',
     localEntries: [entry], message: 'log',
   }), { name: 'ConflictError' });
+});
+
+test('pullWeek возвращает удалённые записи, ничего не записывая', async () => {
+  const remote = { week_start: '2026-07-27', entries: [entry] };
+  const fetchFn = fakeFetch([{ status: 200, body: { content: toBase64(JSON.stringify(remote)), sha: 'a' } }]);
+  const result = await pullWeek({ fetchFn, token: 'tok', path: 'p.json' });
+  assert.equal(result.length, 1);
+  assert.equal(fetchFn.calls.length, 1);
+  assert.equal(fetchFn.calls[0].options.method, 'GET');
+});
+
+test('pullWeek на отсутствующем файле возвращает пустой список', async () => {
+  const fetchFn = fakeFetch([{ status: 404, body: {} }]);
+  assert.deepEqual(await pullWeek({ fetchFn, token: 'tok', path: 'p.json' }), []);
+});
+
+test('pullWeek не падает на непригодном содержимом', async () => {
+  const fetchFn = fakeFetch([{ status: 200, body: { content: toBase64('[]'), sha: 'a' } }]);
+  assert.deepEqual(await pullWeek({ fetchFn, token: 'tok', path: 'p.json' }), []);
 });
 
 test('syncWeek переживает валидный JSON неправильной формы', async () => {
