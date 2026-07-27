@@ -72,12 +72,18 @@ const base = {
   updated_at: '2026-07-27T08:00:00.000Z', device: 'phone',
 };
 
-test('entryKey собирает ключ из даты, блока и упражнения', () => {
-  assert.equal(entryKey(base), '2026-07-27|pull|вис на перекладине');
+test('entryKey собирает ключ из даты, окна, блока и упражнения', () => {
+  assert.equal(entryKey(base), '2026-07-27|утро|pull|вис на перекладине');
 });
 
 test('entryKey нечувствителен к регистру и лишним пробелам в названии', () => {
-  assert.equal(entryKey({ ...base, exercise: '  Вис На Перекладине ' }), '2026-07-27|pull|вис на перекладине');
+  assert.equal(entryKey({ ...base, exercise: '  Вис На Перекладине ' }), '2026-07-27|утро|pull|вис на перекладине');
+});
+
+test('entryKey различает один блок в разных окнах дня', () => {
+  const day = { ...base, block: 'push', exercise: 'отжимания от стены', window: 'день' };
+  const evening = { ...day, window: 'вечер' };
+  assert.notEqual(entryKey(day), entryKey(evening));
 });
 
 test('mergeEntries добавляет записи, которых нет на той стороне', () => {
@@ -189,10 +195,15 @@ Expected: FAIL — `Cannot find module '.../assets/tracker-core.js'`
 /** Блоки, попадание в которые засчитывается как «день состоялся». */
 const HIT_BLOCKS = new Set(['push', 'pull', 'mob']);
 
-/** Ключ записи: дата + блок + упражнение. Название нормализуем — оно приходит из разметки. */
+/**
+ * Ключ записи: дата + окно + блок + упражнение. Окно обязательно: в истории есть дни,
+ * где один блок идёт дважды с одинаковым названием и различается только окном
+ * (например «отжимания от стены» днём и вечером) — без окна такие отметки затирают друг друга.
+ * Тексты нормализуем: они приходят из разметки.
+ */
 export function entryKey(entry) {
-  const exercise = String(entry.exercise || '').trim().toLowerCase().replace(/\s+/g, ' ');
-  return `${entry.date}|${entry.block}|${exercise}`;
+  const norm = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  return `${entry.date}|${norm(entry.window)}|${entry.block}|${norm(entry.exercise)}`;
 }
 
 /** Слияние двух наборов записей. При совпадении ключа побеждает больший updated_at. */
@@ -250,7 +261,7 @@ export function weekStats(entries, dates) {
 - [ ] **Step 5: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 17 тестов
+Expected: PASS, 18 тестов
 
 - [ ] **Step 6: Коммит**
 
@@ -367,7 +378,7 @@ export function isTrackable(block) {
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 25 тестов суммарно
+Expected: PASS, 26 тестов суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -716,7 +727,7 @@ export async function syncWeek({ fetchFn, token, path, weekStart, localEntries, 
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 43 теста суммарно
+Expected: PASS, 44 теста суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -761,6 +772,8 @@ function fakeStorage(initial = {}) {
     getItem: key => (map.has(key) ? map.get(key) : null),
     setItem: (key, value) => map.set(key, String(value)),
     removeItem: key => map.delete(key),
+    key: index => [...map.keys()][index] ?? null,
+    get length() { return map.size; },
     _map: map,
   };
 }
@@ -828,6 +841,18 @@ test('метка синхронизации хранится по неделям
   store.setSyncedAt('2026-07-27', '2026-07-27T10:00:00.000Z');
   assert.equal(store.getSyncedAt('2026-07-27'), '2026-07-27T10:00:00.000Z');
   assert.equal(store.getSyncedAt('2026-08-03'), null);
+});
+
+test('weekStarts перечисляет недели с сохранённым логом', () => {
+  const store = new Store(fakeStorage());
+  store.upsertEntry('2026-08-03', { ...entry, date: '2026-08-03' });
+  store.upsertEntry('2026-07-27', entry);
+  store.setToken('github_pat_x');
+  assert.deepEqual(store.weekStarts(), ['2026-07-27', '2026-08-03']);
+});
+
+test('weekStarts на пустом хранилище возвращает пустой список', () => {
+  assert.deepEqual(new Store(fakeStorage()).weekStarts(), []);
 });
 
 test('имя устройства выставляется один раз и не меняется', () => {
@@ -907,6 +932,17 @@ export class Store {
     this.storage.setItem(syncKey(weekStart), iso);
   }
 
+  /** Недели, по которым на этом устройстве есть сохранённый лог. */
+  weekStarts() {
+    const prefix = 'ppu:log:';
+    const result = [];
+    for (let i = 0; i < this.storage.length; i += 1) {
+      const key = this.storage.key(i);
+      if (key && key.startsWith(prefix)) result.push(key.slice(prefix.length));
+    }
+    return result.sort();
+  }
+
   /** Нужно только для разбора конфликтов: кто поставил отметку. */
   deviceName() {
     const existing = this.storage.getItem(DEVICE_KEY);
@@ -922,7 +958,7 @@ export class Store {
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 53 теста суммарно
+Expected: PASS, 56 тестов суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -950,7 +986,7 @@ git commit -m "Трекер: хранилище на устройстве (то�
 
 ```js
 // DOM-слой трекера: контролы на карточках, шторка уточнения, шапка, синхронизация.
-import { weekStats, pendingEntries, mergeEntries, sameEntries } from './tracker-core.js';
+import { weekStats, pendingEntries, mergeEntries, sameEntries, entryKey } from './tracker-core.js';
 import { blockFromDotClass, windowFromMealType, isTrackable } from './tracker-parse.js';
 import { Store } from './tracker-store.js';
 import { pullWeek, syncWeek, AuthError } from './tracker-github.js';
@@ -1037,10 +1073,8 @@ function describeCard(wrap) {
 }
 
 function findEntry(card) {
-  return entries.find(
-    e => e.date === card.date && e.block === card.block
-      && e.exercise.trim().toLowerCase() === card.exercise.toLowerCase()
-  );
+  const key = entryKey(card);
+  return entries.find(e => entryKey(e) === key);
 }
 
 function saveEntry(card, changes) {
@@ -1171,7 +1205,8 @@ async function runPull() {
       token,
       path: logPath(),
     });
-    entries = mergeEntries(remoteEntries, entries);
+    // Перечитываем хранилище: соседняя вкладка могла что-то отметить, пока летел ответ.
+    entries = mergeEntries(remoteEntries, mergeEntries(store.loadWeek(weekStart), entries));
     store.replaceWeek(weekStart, entries);
     // Сравниваем с тем, что реально лежит в репозитории, а не со снимком «было ли грязно»
     // до запроса: отметку, поставленную пока летел ответ, слияние сохранит, и она обязана
@@ -1208,7 +1243,7 @@ async function runSync() {
     // syncWeek работал со снимком, сделанным до запроса. Пока он летел, пользователь мог
     // отметить ещё что-то: без слияния присваивание стёрло бы новую отметку и из памяти,
     // и из localStorage. Метку синхронизации ставим, только если отправлено ровно всё.
-    entries = mergeEntries(merged, entries);
+    entries = mergeEntries(merged, mergeEntries(store.loadWeek(weekStart), entries));
     store.replaceWeek(weekStart, entries);
     if (sameEntries(entries, merged)) store.setSyncedAt(weekStart, startedAt);
     render();
@@ -1217,6 +1252,37 @@ async function runSync() {
   } finally {
     syncing = false;
     renderBar();
+  }
+}
+
+/**
+ * Досылка недель, страница которых больше не открывается.
+ * Отметку, поставленную в воскресенье вечером, иначе никто бы не отправил:
+ * в понедельник открывается уже другая неделя со своим weekStart.
+ */
+async function flushOtherWeeks() {
+  const token = store.getToken();
+  if (!token) return;
+  for (const other of store.weekStarts()) {
+    if (other === weekStart) continue;
+    const stored = store.loadWeek(other);
+    if (pendingEntries(stored, store.getSyncedAt(other)).length === 0) continue;
+    const startedAt = nowIso();
+    try {
+      const merged = await syncWeek({
+        fetchFn: window.fetch.bind(window),
+        token,
+        path: `history/log/${other}.json`,
+        weekStart: other,
+        localEntries: stored,
+        message: `log: ${other} · отметок: ${stored.length}`,
+      });
+      const actual = mergeEntries(merged, store.loadWeek(other));
+      store.replaceWeek(other, actual);
+      if (sameEntries(actual, merged)) store.setSyncedAt(other, startedAt);
+    } catch (error) {
+      handleSyncError(error);
+    }
   }
 }
 
@@ -1326,10 +1392,16 @@ function mount() {
   const header = document.querySelector('header');
   if (header) header.appendChild(bar);
 
+  // Уход со страницы — последний момент, когда отметку ещё можно отправить.
+  // Ждать дебаунса нельзя: вкладку закроют или телефон заблокируют раньше.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') runSync();
+  });
+
   render();
   // Сначала подтягиваем чужие отметки, затем досылаем свои: так неотправленное
   // после прошлого сбоя действительно уедет при следующем открытии страницы.
-  runPull().then(runSync);
+  runPull().then(runSync).then(flushOtherWeeks);
 }
 
 if (document.readyState === 'loading') {
@@ -1391,7 +1463,7 @@ self.addEventListener('fetch', e => {
 - [ ] **Step 4: Проверить, что модульные тесты не сломались**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 53 теста
+Expected: PASS, 56 тестов
 
 - [ ] **Step 5: Поднять локальный сервер и проверить вручную**
 
@@ -1605,6 +1677,11 @@ Expected: `changes()` вернёт `1`, у строки заполнены `done
 ```markdown
 ### Факт прошлой недели (перед генерацией — обязательно)
 
+0. **Сначала подтянуть репозиторий:** `git pull --rebase origin main`.
+   Отметки трекер пишет прямо в `main` через GitHub API, минуя рабочее дерево — без этого
+   шага файла лога в локальном чекауте просто нет, и весь разбор факта тихо выродится
+   в «данных нет». По той же причине `git pull --rebase` нужен и перед финальным `git push`.
+
 1. Прочитать `history/log/<дата_начала_прошлой_недели>.json`, если файл есть.
 
 2. Залить факт в `exercise_log`. Ключ связи — `date + block + card_title`, где `card_title`
@@ -1630,10 +1707,14 @@ Expected: `changes()` вернёт `1`, у строки заполнены `done
    Одинарные кавычки внутри значений удваивать. Колонка `window` — зарезервированное слово
    SQLite, в запросах экранировать: `"window"`.
 
-3. **После каждого UPDATE проверять `changes()`.** Ноль означает, что строка не нашлась —
-   молча пропускать нельзя. Собрать список несопоставленных записей и показать colz:
-   что именно не легло в базу и почему (чаще всего — `card_title` пуст у недель,
-   сгенерированных до появления трекера).
+3. **После каждого UPDATE проверять, что `changes()` вернул ровно `1`.**
+   `0` — строка не нашлась (чаще всего `card_title` пуст у недель, сгенерированных до
+   появления трекера). Больше `1` — ключ неуникален, и один факт только что записался
+   в несколько строк: это ошибка, а не успех. В обоих случаях молча пропускать нельзя —
+   собрать список проблемных записей и показать colz, что именно не легло в базу.
+
+   Записи с `done = null` (отметку сняли третьим тапом) пропускать: это «нет данных»,
+   а не «не сделал».
 
 4. Записи с `felt = 'больно'` — **предложить** colz внести в `training_rules` с рейтингом `-2`.
    Предложить, не проставлять молча: решение за ним.
@@ -1648,7 +1729,11 @@ Expected: `changes()` вернёт `1`, у строки заполнены `done
 
 ```markdown
 При вставке строк в `exercise_log` заполнять `card_title` — **дословно тот текст, что стоит
-в `.meal-title` карточки этого упражнения**, без пометок варианта дня. Пометки («бонус»,
+в `.meal-title` карточки этого упражнения**, без пометок варианта дня.
+
+`card_title` обязан быть уникален в пределах `date + block + window`: если один блок идёт
+в день дважды (например отжимания днём и вечером), у карточек должны быть разные названия
+либо разные окна — иначе отметки затрут друг друга ещё в браузере. Пометки («бонус»,
 «сразу после йоги») по-прежнему идут в `exercise` и в `.meal-type`, но не в `card_title`:
 это ключ связи с отметками трекера, он обязан совпадать с карточкой символ в символ.
 
