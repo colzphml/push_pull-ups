@@ -239,7 +239,9 @@ async function runPull() {
 async function runSync() {
   if (syncTimer) { clearTimeout(syncTimer); syncTimer = null; }
   const token = store.getToken();
-  if (!token || syncing || !isDirty()) { renderBar(); return; }
+  if (!token || !isDirty()) { renderBar(); return; }
+  // Чтение уже идёт — не отменяем отправку молча, а откладываем её.
+  if (syncing) { scheduleSync(); return; }
   syncing = true;
   renderBar();
   const startedAt = nowIso();
@@ -252,9 +254,12 @@ async function runSync() {
       localEntries: entries,
       message: `log: ${weekStart} · отметок: ${entries.length}`,
     });
-    entries = merged;
-    store.replaceWeek(weekStart, merged);
-    store.setSyncedAt(weekStart, startedAt);
+    // syncWeek работал со снимком, сделанным до запроса. Пока он летел, пользователь мог
+    // отметить ещё что-то: без слияния присваивание стёрло бы новую отметку и из памяти,
+    // и из localStorage. Метку синхронизации ставим, только если отправлено ровно всё.
+    entries = mergeEntries(merged, entries);
+    store.replaceWeek(weekStart, entries);
+    if (sameEntries(entries, merged)) store.setSyncedAt(weekStart, startedAt);
     render();
   } catch (error) {
     handleSyncError(error);
