@@ -9,6 +9,8 @@ function fakeStorage(initial = {}) {
     getItem: key => (map.has(key) ? map.get(key) : null),
     setItem: (key, value) => map.set(key, String(value)),
     removeItem: key => map.delete(key),
+    key: index => [...map.keys()][index] ?? null,
+    get length() { return map.size; },
     _map: map,
   };
 }
@@ -76,6 +78,18 @@ test('метка синхронизации хранится по неделям
   store.setSyncedAt('2026-07-27', '2026-07-27T10:00:00.000Z');
   assert.equal(store.getSyncedAt('2026-07-27'), '2026-07-27T10:00:00.000Z');
   assert.equal(store.getSyncedAt('2026-08-03'), null);
+});
+
+test('weekStarts перечисляет недели с сохранённым логом', () => {
+  const store = new Store(fakeStorage());
+  store.upsertEntry('2026-08-03', { ...entry, date: '2026-08-03' });
+  store.upsertEntry('2026-07-27', entry);
+  store.setToken('github_pat_x');
+  assert.deepEqual(store.weekStarts(), ['2026-07-27', '2026-08-03']);
+});
+
+test('weekStarts на пустом хранилище возвращает пустой список', () => {
+  assert.deepEqual(new Store(fakeStorage()).weekStarts(), []);
 });
 
 test('имя устройства выставляется один раз и не меняется', () => {

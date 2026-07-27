@@ -58,6 +58,17 @@ export class Store {
     this.storage.setItem(syncKey(weekStart), iso);
   }
 
+  /** Недели, по которым на этом устройстве есть сохранённый лог. */
+  weekStarts() {
+    const prefix = 'ppu:log:';
+    const result = [];
+    for (let i = 0; i < this.storage.length; i += 1) {
+      const key = this.storage.key(i);
+      if (key && key.startsWith(prefix)) result.push(key.slice(prefix.length));
+    }
+    return result.sort();
+  }
+
   /** Нужно только для разбора конфликтов: кто поставил отметку. */
   deviceName() {
     const existing = this.storage.getItem(DEVICE_KEY);

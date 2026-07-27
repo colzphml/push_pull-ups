@@ -9,12 +9,18 @@ const base = {
   updated_at: '2026-07-27T08:00:00.000Z', device: 'phone',
 };
 
-test('entryKey собирает ключ из даты, блока и упражнения', () => {
-  assert.equal(entryKey(base), '2026-07-27|pull|вис на перекладине');
+test('entryKey собирает ключ из даты, окна, блока и упражнения', () => {
+  assert.equal(entryKey(base), '2026-07-27|утро|pull|вис на перекладине');
 });
 
 test('entryKey нечувствителен к регистру и лишним пробелам в названии', () => {
-  assert.equal(entryKey({ ...base, exercise: '  Вис На Перекладине ' }), '2026-07-27|pull|вис на перекладине');
+  assert.equal(entryKey({ ...base, exercise: '  Вис На Перекладине ' }), '2026-07-27|утро|pull|вис на перекладине');
+});
+
+test('entryKey различает один блок в разных окнах дня', () => {
+  const day = { ...base, block: 'push', exercise: 'отжимания от стены', window: 'день' };
+  const evening = { ...day, window: 'вечер' };
+  assert.notEqual(entryKey(day), entryKey(evening));
 });
 
 test('mergeEntries добавляет записи, которых нет на той стороне', () => {

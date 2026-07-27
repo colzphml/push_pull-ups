@@ -4,10 +4,15 @@
 /** Блоки, попадание в которые засчитывается как «день состоялся». */
 const HIT_BLOCKS = new Set(['push', 'pull', 'mob']);
 
-/** Ключ записи: дата + блок + упражнение. Название нормализуем — оно приходит из разметки. */
+/**
+ * Ключ записи: дата + окно + блок + упражнение. Окно обязательно: в истории есть дни,
+ * где один блок идёт дважды с одинаковым названием и различается только окном
+ * (например «отжимания от стены» днём и вечером) — без окна такие отметки затирают друг друга.
+ * Тексты нормализуем: они приходят из разметки.
+ */
 export function entryKey(entry) {
-  const exercise = String(entry.exercise || '').trim().toLowerCase().replace(/\s+/g, ' ');
-  return `${entry.date}|${entry.block}|${exercise}`;
+  const norm = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  return `${entry.date}|${norm(entry.window)}|${entry.block}|${norm(entry.exercise)}`;
 }
 
 /** Слияние двух наборов записей. При совпадении ключа побеждает больший updated_at. */

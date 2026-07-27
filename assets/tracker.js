@@ -1,5 +1,5 @@
 // DOM-слой трекера: контролы на карточках, шторка уточнения, шапка, синхронизация.
-import { weekStats, pendingEntries, mergeEntries, sameEntries } from './tracker-core.js';
+import { weekStats, pendingEntries, mergeEntries, sameEntries, entryKey } from './tracker-core.js';
 import { blockFromDotClass, windowFromMealType, isTrackable } from './tracker-parse.js';
 import { Store } from './tracker-store.js';
 import { pullWeek, syncWeek, AuthError } from './tracker-github.js';
@@ -86,10 +86,8 @@ function describeCard(wrap) {
 }
 
 function findEntry(card) {
-  return entries.find(
-    e => e.date === card.date && e.block === card.block
-      && e.exercise.trim().toLowerCase() === card.exercise.toLowerCase()
-  );
+  const key = entryKey(card);
+  return entries.find(e => entryKey(e) === key);
 }
 
 function saveEntry(card, changes) {
@@ -220,7 +218,8 @@ async function runPull() {
       token,
       path: logPath(),
     });
-    entries = mergeEntries(remoteEntries, entries);
+    // Перечитываем хранилище: соседняя вкладка могла что-то отметить, пока летел ответ.
+    entries = mergeEntries(remoteEntries, mergeEntries(store.loadWeek(weekStart), entries));
     store.replaceWeek(weekStart, entries);
     // Сравниваем с тем, что реально лежит в репозитории, а не со снимком «было ли грязно»
     // до запроса: отметку, поставленную пока летел ответ, слияние сохранит, и она обязана
@@ -257,7 +256,7 @@ async function runSync() {
     // syncWeek работал со снимком, сделанным до запроса. Пока он летел, пользователь мог
     // отметить ещё что-то: без слияния присваивание стёрло бы новую отметку и из памяти,
     // и из localStorage. Метку синхронизации ставим, только если отправлено ровно всё.
-    entries = mergeEntries(merged, entries);
+    entries = mergeEntries(merged, mergeEntries(store.loadWeek(weekStart), entries));
     store.replaceWeek(weekStart, entries);
     if (sameEntries(entries, merged)) store.setSyncedAt(weekStart, startedAt);
     render();
@@ -266,6 +265,37 @@ async function runSync() {
   } finally {
     syncing = false;
     renderBar();
+  }
+}
+
+/**
+ * Досылка недель, страница которых больше не открывается.
+ * Отметку, поставленную в воскресенье вечером, иначе никто бы не отправил:
+ * в понедельник открывается уже другая неделя со своим weekStart.
+ */
+async function flushOtherWeeks() {
+  const token = store.getToken();
+  if (!token) return;
+  for (const other of store.weekStarts()) {
+    if (other === weekStart) continue;
+    const stored = store.loadWeek(other);
+    if (pendingEntries(stored, store.getSyncedAt(other)).length === 0) continue;
+    const startedAt = nowIso();
+    try {
+      const merged = await syncWeek({
+        fetchFn: window.fetch.bind(window),
+        token,
+        path: `history/log/${other}.json`,
+        weekStart: other,
+        localEntries: stored,
+        message: `log: ${other} · отметок: ${stored.length}`,
+      });
+      const actual = mergeEntries(merged, store.loadWeek(other));
+      store.replaceWeek(other, actual);
+      if (sameEntries(actual, merged)) store.setSyncedAt(other, startedAt);
+    } catch (error) {
+      handleSyncError(error);
+    }
   }
 }
 
@@ -375,10 +405,16 @@ function mount() {
   const header = document.querySelector('header');
   if (header) header.appendChild(bar);
 
+  // Уход со страницы — последний момент, когда отметку ещё можно отправить.
+  // Ждать дебаунса нельзя: вкладку закроют или телефон заблокируют раньше.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') runSync();
+  });
+
   render();
   // Сначала подтягиваем чужие отметки, затем досылаем свои: так неотправленное
   // после прошлого сбоя действительно уедет при следующем открытии страницы.
-  runPull().then(runSync);
+  runPull().then(runSync).then(flushOtherWeeks);
 }
 
 if (document.readyState === 'loading') {
