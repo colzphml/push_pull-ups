@@ -1518,17 +1518,24 @@ Expected: строка вида `10|actual|TEXT|0||0`
   actual   TEXT,   -- "3×20 сек" — что реально вышло, из трекера
 ```
 
-- [ ] **Step 3: Проверить заливку факта на реальных данных**
+- [ ] **Step 3: Проверить заливку факта — на копии, а не на живой базе**
+
+`history/training.db` — реальная история тренировок. Записывать в неё выдуманный факт нельзя:
+`done = 1` там означает, что человек действительно сделал подход. Проверяем на копии.
 
 ```bash
-sqlite3 history/training.db "
+cp history/training.db /tmp/ppu-check.db
+sqlite3 /tmp/ppu-check.db "
 UPDATE exercise_log SET done = 1, actual = '3 × 20 сек', felt = 'норм'
 WHERE date = '2026-07-27' AND block = 'pull' AND exercise LIKE 'Вис%';
 SELECT date, \"window\", block, exercise, planned, actual, done, felt
-FROM exercise_log WHERE date = '2026-07-27';"
+FROM exercise_log WHERE date = '2026-07-27' AND block = 'pull';"
+rm /tmp/ppu-check.db
 ```
 
 Expected: у строки виса заполнены `done`, `actual`, `felt`. Обратить внимание: `window` экранирован двойными кавычками — это зарезервированное слово SQLite.
+
+В саму `history/training.db` этой задачей вносится **только** миграция схемы из шага 1. Факт туда попадёт при первом запуске `/make-week` — из реальных отметок.
 
 - [ ] **Step 4: Добавить в скилл `make-week` чтение факта**
 
@@ -1582,7 +1589,6 @@ Expected: `ok` и `267`
 ```bash
 git add history/schema.sql history/training.db CLAUDE.md .claude/
 git commit -m "Трекер: приём факта в exercise_log, колонка actual, обновление make-week"
-git push origin main
 ```
 
 ---
