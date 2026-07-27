@@ -359,6 +359,7 @@ git commit -m "Трекер: разбор разметки недели (бло�
   - `toBase64(str: string) -> string` / `fromBase64(b64: string) -> string` — с поддержкой кириллицы
   - `readFile(fetchFn, token, path) -> {text: string, sha: string} | null` — `null` при 404
   - `writeFile(fetchFn, token, path, text, sha, message) -> {sha: string}` — бросает `ConflictError` при 409/422
+  - `pullWeek({fetchFn, token, path}) -> Entry[]` — только чтение удалённого лога, без записи
   - `syncWeek({fetchFn, token, path, weekStart, localEntries, message}) -> Entry[]` — read-modify-write с тремя попытками
   - Класс `ConflictError extends Error` со `name === 'ConflictError'`
   - Класс `AuthError extends Error` со `name === 'AuthError'` — при 401/403
@@ -373,7 +374,7 @@ git commit -m "Трекер: разбор разметки недели (бло�
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  toBase64, fromBase64, readFile, writeFile, syncWeek, ConflictError, AuthError,
+  toBase64, fromBase64, readFile, writeFile, pullWeek, syncWeek, ConflictError, AuthError,
 } from '../assets/tracker-github.js';
 
 /** Фейковый fetch: отдаёт ответы из очереди и записывает полученные запросы. */
@@ -512,6 +513,25 @@ test('syncWeek сдаётся после трёх конфликтов подр�
   }), { name: 'ConflictError' });
 });
 
+test('pullWeek возвращает удалённые записи, ничего не записывая', async () => {
+  const remote = { week_start: '2026-07-27', entries: [entry] };
+  const fetchFn = fakeFetch([{ status: 200, body: { content: toBase64(JSON.stringify(remote)), sha: 'a' } }]);
+  const result = await pullWeek({ fetchFn, token: 'tok', path: 'p.json' });
+  assert.equal(result.length, 1);
+  assert.equal(fetchFn.calls.length, 1);
+  assert.equal(fetchFn.calls[0].options.method, 'GET');
+});
+
+test('pullWeek на отсутствующем файле возвращает пустой список', async () => {
+  const fetchFn = fakeFetch([{ status: 404, body: {} }]);
+  assert.deepEqual(await pullWeek({ fetchFn, token: 'tok', path: 'p.json' }), []);
+});
+
+test('pullWeek не падает на непригодном содержимом', async () => {
+  const fetchFn = fakeFetch([{ status: 200, body: { content: toBase64('[]'), sha: 'a' } }]);
+  assert.deepEqual(await pullWeek({ fetchFn, token: 'tok', path: 'p.json' }), []);
+});
+
 test('syncWeek переживает валидный JSON неправильной формы', async () => {
   // У голого массива поле .entries — метод прототипа: truthy, но не список записей.
   const fetchFn = fakeFetch([
@@ -623,23 +643,31 @@ export async function writeFile(fetchFn, token, path, text, sha, message) {
   return { sha: data.content.sha };
 }
 
+/** Разбор содержимого файла лога. Непригодное содержимое трактуем как пустой список. */
+function parseEntries(text) {
+  try {
+    const parsed = JSON.parse(text);
+    // Проверяем именно массив: у голого `[]` поле .entries — это метод прототипа,
+    // он truthy и проскочил бы проверку на существование, уронив слияние.
+    return Array.isArray(parsed?.entries) ? parsed.entries : [];
+  } catch {
+    // Битый файл в репозитории не должен съесть локальные отметки — перезаписываем его.
+    return [];
+  }
+}
+
+/** Только чтение: подтянуть отметки, сделанные с другого устройства. Ничего не пишет. */
+export async function pullWeek({ fetchFn, token, path }) {
+  const remote = await readFile(fetchFn, token, path);
+  return remote ? parseEntries(remote.text) : [];
+}
+
 /** Читаем актуальный файл, вливаем локальные изменения, пишем обратно. При конфликте — заново. */
 export async function syncWeek({ fetchFn, token, path, weekStart, localEntries, message }) {
   let lastError = null;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
     const remote = await readFile(fetchFn, token, path);
-    let remoteEntries = [];
-    if (remote) {
-      try {
-        const parsed = JSON.parse(remote.text);
-        // Проверяем именно массив: у голого `[]` поле .entries — это метод прототипа,
-        // он truthy и проскочил бы проверку на существование, уронив слияние.
-        remoteEntries = Array.isArray(parsed?.entries) ? parsed.entries : [];
-      } catch {
-        // Битый файл в репозитории не должен съесть локальные отметки — перезаписываем его.
-        remoteEntries = [];
-      }
-    }
+    const remoteEntries = remote ? parseEntries(remote.text) : [];
     const merged = mergeEntries(remoteEntries, localEntries);
     const body = `${JSON.stringify({ week_start: weekStart, entries: merged }, null, 2)}\n`;
     try {
@@ -657,7 +685,7 @@ export async function syncWeek({ fetchFn, token, path, weekStart, localEntries, 
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 36 тестов суммарно
+Expected: PASS, 39 тестов суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -863,7 +891,7 @@ export class Store {
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 46 тестов суммарно
+Expected: PASS, 49 тестов суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -891,13 +919,12 @@ git commit -m "Трекер: хранилище на устройстве (то�
 
 ```js
 // DOM-слой трекера: контролы на карточках, шторка уточнения, шапка, синхронизация.
-import { weekStats, pendingEntries } from './tracker-core.js';
+import { weekStats, pendingEntries, mergeEntries } from './tracker-core.js';
 import { blockFromDotClass, windowFromMealType, isTrackable } from './tracker-parse.js';
 import { Store } from './tracker-store.js';
-import { syncWeek, AuthError } from './tracker-github.js';
+import { pullWeek, syncWeek, AuthError } from './tracker-github.js';
 
 const SYNC_DELAY_MS = 120000;
-const STATUS = { synced: 'зелёный', pending: 'жёлтый', error: 'красный' };
 
 const store = new Store(window.localStorage);
 const device = store.deviceName();
@@ -1036,7 +1063,7 @@ function renderBar() {
   if (!bar) return;
   const stats = weekStats(entries, dates);
   const hasToken = Boolean(store.getToken());
-  const dirty = pendingEntries(entries, store.getSyncedAt(weekStart)).length > 0;
+  const dirty = isDirty();
   let state = 'synced';
   if (!hasToken) state = 'error';
   else if (dirty || syncing) state = 'pending';
@@ -1075,7 +1102,7 @@ function askToken() {
   if (value.trim() === '') store.clearToken();
   else store.setToken(value);
   renderBar();
-  if (store.getToken()) runSync();
+  if (store.getToken()) runPull().then(runSync);
 }
 
 function scheduleSync() {
@@ -1083,10 +1110,55 @@ function scheduleSync() {
   syncTimer = setTimeout(runSync, SYNC_DELAY_MS);
 }
 
+function logPath() {
+  return `history/log/${weekStart}.json`;
+}
+
+function isDirty() {
+  return pendingEntries(entries, store.getSyncedAt(weekStart)).length > 0;
+}
+
+function handleSyncError(error) {
+  if (error instanceof AuthError) store.clearToken();
+  // Отметки уже в localStorage — повторим при следующем открытии страницы.
+  console.warn('Синхронизация не удалась:', error.name);
+}
+
+/**
+ * Подтягивание без записи — вызывается при открытии страницы.
+ * Только так отметки, поставленные на другом устройстве, попадают сюда:
+ * запись при каждом открытии плодила бы пустые коммиты.
+ */
+async function runPull() {
+  const token = store.getToken();
+  if (!token || syncing) { renderBar(); return; }
+  const wasDirty = isDirty();
+  syncing = true;
+  renderBar();
+  try {
+    const remoteEntries = await pullWeek({
+      fetchFn: window.fetch.bind(window),
+      token,
+      path: logPath(),
+    });
+    entries = mergeEntries(remoteEntries, entries);
+    store.replaceWeek(weekStart, entries);
+    // Своего неотправленного не было — значит после слияния мы ровно то же, что в репозитории.
+    if (!wasDirty) store.setSyncedAt(weekStart, nowIso());
+    render();
+  } catch (error) {
+    handleSyncError(error);
+  } finally {
+    syncing = false;
+    renderBar();
+  }
+}
+
+/** Отправка: срабатывает по дебаунсу после отметки и по кнопке. */
 async function runSync() {
   if (syncTimer) { clearTimeout(syncTimer); syncTimer = null; }
   const token = store.getToken();
-  if (!token || syncing || entries.length === 0) { renderBar(); return; }
+  if (!token || syncing || !isDirty()) { renderBar(); return; }
   syncing = true;
   renderBar();
   const startedAt = nowIso();
@@ -1094,7 +1166,7 @@ async function runSync() {
     const merged = await syncWeek({
       fetchFn: window.fetch.bind(window),
       token,
-      path: `history/log/${weekStart}.json`,
+      path: logPath(),
       weekStart,
       localEntries: entries,
       message: `log: ${weekStart} · отметок: ${entries.length}`,
@@ -1104,9 +1176,7 @@ async function runSync() {
     store.setSyncedAt(weekStart, startedAt);
     render();
   } catch (error) {
-    if (error instanceof AuthError) store.clearToken();
-    // Отметки уже в localStorage — повторим при следующем открытии страницы.
-    console.warn('Синхронизация не удалась:', error.name);
+    handleSyncError(error);
   } finally {
     syncing = false;
     renderBar();
@@ -1220,7 +1290,7 @@ function mount() {
   if (header) header.appendChild(bar);
 
   render();
-  runSync();
+  runPull();
 }
 
 if (document.readyState === 'loading') {
@@ -1282,7 +1352,7 @@ self.addEventListener('fetch', e => {
 - [ ] **Step 4: Проверить, что модульные тесты не сломались**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 46 тестов
+Expected: PASS, 49 тестов
 
 - [ ] **Step 5: Поднять локальный сервер и проверить вручную**
 
