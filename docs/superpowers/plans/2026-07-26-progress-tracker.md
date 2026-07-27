@@ -1012,9 +1012,11 @@ const styles = `
 .tr-mark.miss{border-color:#7a4a4a;color:#c98080}
 .tr-detail{display:inline-block;margin-left:9px;font-size:11px;color:var(--text-dim);
   background:none;border:none;cursor:pointer;padding:2px 0;vertical-align:middle}
+/* Явный display перебивает браузерное [hidden]{display:none} — возвращаем скрытие. */
+.tr-detail[hidden]{display:none}
 .tr-detail:hover{color:var(--accent)}
-.tr-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 0;
-  font-size:12.5px;color:var(--text-dim)}
+.tr-bar{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;
+  margin:10px 0 0;font-size:12.5px;color:var(--text-dim)}
 .tr-bar b{color:var(--accent);font-weight:600}
 .tr-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:#4caf50}
 .tr-dot.pending{background:#d9a441}
