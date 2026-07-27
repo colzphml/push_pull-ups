@@ -1002,15 +1002,16 @@ let syncTimer = null;
 let syncing = false;
 
 const styles = `
-.tr-mark{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;
+.tr-mark{position:absolute;top:11px;right:11px;width:27px;height:27px;border-radius:50%;
   border:1.5px solid var(--border);background:transparent;color:var(--text-dim);
-  font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;
   z-index:3;padding:0;transition:.15s}
+.card-front[data-tr] .meal-type{padding-right:32px}
 .tr-mark:hover{border-color:var(--accent)}
 .tr-mark.done{border-color:var(--accent);background:var(--accent);color:#0d1117;font-weight:600}
 .tr-mark.miss{border-color:#7a4a4a;color:#c98080}
-.tr-detail{position:absolute;bottom:10px;left:14px;font-size:11px;color:var(--text-dim);
-  background:none;border:none;cursor:pointer;padding:2px 0;z-index:3}
+.tr-detail{display:inline-block;margin-left:9px;font-size:11px;color:var(--text-dim);
+  background:none;border:none;cursor:pointer;padding:2px 0;vertical-align:middle}
 .tr-detail:hover{color:var(--accent)}
 .tr-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 0;
   font-size:12.5px;color:var(--text-dim)}
@@ -1365,7 +1366,8 @@ function mount() {
     const card = describeCard(wrap);
     if (!card) return;
     wrap.dataset.tr = '1';
-    wrap.style.position = 'relative';
+    const front = wrap.querySelector('.card-front');
+    front.dataset.tr = '1';
 
     const mark = document.createElement('button');
     mark.type = 'button';
@@ -1375,7 +1377,7 @@ function mount() {
       const entry = findEntry(card);
       saveEntry(card, { done: nextDone(entry ? entry.done : null) });
     };
-    wrap.appendChild(mark);
+    front.appendChild(mark);
 
     const detail = document.createElement('button');
     detail.type = 'button';
@@ -1383,7 +1385,10 @@ function mount() {
     detail.textContent = '✎ уточнить';
     detail.hidden = true;
     detail.onclick = event => { event.stopPropagation(); openSheet(card); };
-    wrap.appendChild(detail);
+    // Ставим сразу за плашкой плана: абсолютом она садилась ровно на неё.
+    const kcal = front.querySelector('.meal-kcal');
+    if (kcal) kcal.insertAdjacentElement('afterend', detail);
+    else front.appendChild(detail);
   });
 
   const bar = document.createElement('div');
