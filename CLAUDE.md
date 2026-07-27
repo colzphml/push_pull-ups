@@ -49,7 +49,14 @@ push `#e0a04e`, mob `#a07fc4`). Карточка: лицо + оборот-мод
 Репо: `https://github.com/colzphml/push_pull-ups.git`
 Pages: `https://colzphml.github.io/push_pull-ups/`
 ```bash
+git pull --rebase origin main          # трекер пишет отметки прямо в main — без этого push отобьёт
 git add weeks/ index.html history/training.db
 git commit -m "Неделя ..." && git push origin main
 ```
 `profile.json` — в .gitignore, не пушить.
+
+## Тесты
+Чистая логика трекера покрыта тестами, зависимостей нет:
+```bash
+node --test tests/*.test.js            # маска обязательна: `node --test tests/` в Node 26 не работает
+```
