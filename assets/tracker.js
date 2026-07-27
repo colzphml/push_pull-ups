@@ -1,8 +1,8 @@
 // DOM-слой трекера: контролы на карточках, шторка уточнения, шапка, синхронизация.
-import { weekStats, pendingEntries, mergeEntries, sameEntries, entryKey } from './tracker-core.js';
+import { weekStats, pendingEntries, mergeEntries, sameEntries, entryKey, syncState } from './tracker-core.js';
 import { blockFromDotClass, windowFromMealType, isTrackable } from './tracker-parse.js';
 import { Store } from './tracker-store.js';
-import { pullWeek, syncWeek, AuthError } from './tracker-github.js';
+import { pullWeek, syncWeek, AuthError, describeSyncError } from './tracker-github.js';
 
 const SYNC_DELAY_MS = 120000;
 
@@ -13,6 +13,7 @@ let dates = [];
 let entries = [];
 let syncTimer = null;
 let syncing = false;
+let lastError = null;
 
 const styles = `
 .tr-mark{position:absolute;top:11px;right:11px;width:27px;height:27px;border-radius:50%;
@@ -34,8 +35,13 @@ const styles = `
 .tr-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:#4caf50}
 .tr-dot.pending{background:#d9a441}
 .tr-dot.error{background:#d95f5f}
+.tr-status.pending{color:#d9a441}
+.tr-status.error{color:#d95f5f}
 .tr-bar button{background:none;border:1px solid var(--border);border-radius:8px;
   color:var(--text-dim);font-size:11.5px;padding:3px 9px;cursor:pointer}
+/* Настройка токена нужна раз в полгода — она не должна выглядеть как призыв к действию. */
+.tr-gear{border:none;opacity:.55;font-size:13px;padding:3px 4px}
+.tr-gear:hover{opacity:1}
 .tr-sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
   align-items:flex-end;justify-content:center;z-index:1000}
 .tr-sheet.open{display:flex}
@@ -143,17 +149,17 @@ function renderBar() {
   const bar = document.getElementById('tr-bar');
   if (!bar) return;
   const stats = weekStats(entries, dates);
-  const hasToken = Boolean(store.getToken());
-  const dirty = isDirty();
-  let state = 'synced';
-  if (!hasToken) state = 'error';
-  else if (dirty || syncing) state = 'pending';
+  const state = syncState({
+    hasToken: Boolean(store.getToken()),
+    pendingCount: pendingCount(),
+    syncing,
+    error: lastError,
+  });
+  const tone = state.tone === 'ok' ? '' : ` ${state.tone}`;
 
   bar.innerHTML = '';
   const dot = document.createElement('span');
-  dot.className = `tr-dot${state === 'synced' ? '' : ` ${state === 'error' ? 'error' : 'pending'}`}`;
-  dot.title = state === 'error' ? 'Нужен токен GitHub'
-    : state === 'pending' ? 'Есть неотправленные отметки' : 'Всё сохранено в репозитории';
+  dot.className = `tr-dot${tone}`;
   bar.appendChild(dot);
 
   const hits = document.createElement('span');
@@ -167,10 +173,29 @@ function renderBar() {
   cold.textContent = `❄️ финишей: ${stats.coldFinishes}`;
   bar.appendChild(cold);
 
-  const button = document.createElement('button');
-  button.textContent = hasToken ? (state === 'pending' ? 'Отправить сейчас' : 'Токен') : 'Ввести токен';
-  button.onclick = () => (hasToken && state === 'pending' ? runSync() : askToken());
-  bar.appendChild(button);
+  const status = document.createElement('span');
+  status.className = `tr-status${tone}`;
+  status.textContent = state.label;
+  bar.appendChild(status);
+
+  if (state.button) {
+    const button = document.createElement('button');
+    button.textContent = state.button.label;
+    button.onclick = state.button.kind === 'token' ? askToken
+      : state.button.kind === 'retry' ? retrySync
+      : runSync;
+    bar.appendChild(button);
+  }
+
+  if (state.settings) {
+    const gear = document.createElement('button');
+    gear.className = 'tr-gear';
+    gear.textContent = '⚙';
+    gear.title = 'Токен GitHub';
+    gear.setAttribute('aria-label', 'Токен GitHub');
+    gear.onclick = askToken;
+    bar.appendChild(gear);
+  }
 }
 
 function askToken() {
@@ -182,8 +207,17 @@ function askToken() {
   if (value === null) return;
   if (value.trim() === '') store.clearToken();
   else store.setToken(value);
+  // Новый токен — новая попытка: старая жалоба к нему уже не относится.
+  lastError = null;
   renderBar();
   if (store.getToken()) runPull().then(runSync);
+}
+
+/** Кнопка «Повторить»: снимаем прошлую ошибку и проходим цикл целиком. */
+function retrySync() {
+  lastError = null;
+  renderBar();
+  runPull().then(runSync);
 }
 
 function scheduleSync() {
@@ -195,14 +229,22 @@ function logPath() {
   return `history/log/${weekStart}.json`;
 }
 
+function pendingCount() {
+  return pendingEntries(entries, store.getSyncedAt(weekStart)).length;
+}
+
 function isDirty() {
-  return pendingEntries(entries, store.getSyncedAt(weekStart)).length > 0;
+  return pendingCount() > 0;
 }
 
 function handleSyncError(error) {
+  // Стирать токен можно только по 401: там GitHub прямо сказал, что он не годен.
+  // При лимите запросов и нехватке прав токен исправен, и его стирание лишь загоняет
+  // в круг «ввожу заново — снова не работает».
   if (error instanceof AuthError) store.clearToken();
+  lastError = describeSyncError(error);
   // Отметки уже в localStorage — повторим при следующем открытии страницы.
-  console.warn('Синхронизация не удалась:', error.name);
+  console.warn('Синхронизация не удалась:', error.name, error.message);
 }
 
 /**
@@ -228,6 +270,7 @@ async function runPull() {
     // до запроса: отметку, поставленную пока летел ответ, слияние сохранит, и она обязана
     // остаться неотправленной. Между сравнением и записью метки нет await — вклиниться некуда.
     if (sameEntries(entries, remoteEntries)) store.setSyncedAt(weekStart, nowIso());
+    lastError = null;
     render();
   } catch (error) {
     handleSyncError(error);
@@ -262,6 +305,7 @@ async function runSync() {
     entries = mergeEntries(merged, mergeEntries(store.loadWeek(weekStart), entries));
     store.replaceWeek(weekStart, entries);
     if (sameEntries(entries, merged)) store.setSyncedAt(weekStart, startedAt);
+    lastError = null;
     render();
   } catch (error) {
     handleSyncError(error);

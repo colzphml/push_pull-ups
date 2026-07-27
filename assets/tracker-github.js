@@ -13,6 +13,48 @@ export class AuthError extends Error {
   constructor(message) { super(message); this.name = 'AuthError'; }
 }
 
+export class RateLimitError extends Error {
+  constructor(message) { super(message); this.name = 'RateLimitError'; }
+}
+
+export class PermissionError extends Error {
+  constructor(message) { super(message); this.name = 'PermissionError'; }
+}
+
+/**
+ * Разбор отказа. 403 у GitHub значит слишком многое: и лимит запросов, и нехватку
+ * прав у вполне живого токена. Только 401 — настоящий приговор токену; на остальных
+ * случаях стирать его нельзя, иначе человек вводит заново тот же токен по кругу.
+ */
+async function failureFor(response) {
+  if (response.status === 401) return new AuthError('Токен не принят GitHub');
+  let message = '';
+  try {
+    const data = await response.json();
+    message = String(data?.message || '');
+  } catch {
+    // Тело не разобралось — судим по статусу и заголовкам.
+  }
+  const remaining = response.headers ? response.headers.get('x-ratelimit-remaining') : null;
+  if (response.status === 429 || remaining === '0' || /rate limit/i.test(message)) {
+    return new RateLimitError(message || 'Лимит запросов GitHub');
+  }
+  return new PermissionError(message || 'Нет прав на этот файл');
+}
+
+function isRejection(status) {
+  return status === 401 || status === 403 || status === 429;
+}
+
+/** Текст для панели: человек читает его с телефона, где консоли нет. */
+export function describeSyncError(error) {
+  if (error instanceof AuthError) return 'Токен не принят GitHub';
+  if (error instanceof RateLimitError) return 'GitHub: лимит запросов, позже повторю сам';
+  if (error instanceof PermissionError) return 'Токену не хватает прав на запись';
+  if (error instanceof ConflictError) return 'Файл занят другим устройством';
+  return 'Нет связи с GitHub';
+}
+
 /** btoa() падает на кириллице — кодируем через UTF-8 байты. */
 export function toBase64(str) {
   const bytes = new TextEncoder().encode(str);
@@ -48,9 +90,7 @@ export async function readFile(fetchFn, token, path) {
     cache: 'no-store',
   });
   if (response.status === 404) return null;
-  if (response.status === 401 || response.status === 403) {
-    throw new AuthError('Токен не принят GitHub');
-  }
+  if (isRejection(response.status)) throw await failureFor(response);
   if (!response.ok) throw new Error(`GitHub ответил ${response.status} на чтение`);
   const data = await response.json();
   return { text: fromBase64(data.content), sha: data.sha };
@@ -67,9 +107,7 @@ export async function writeFile(fetchFn, token, path, text, sha, message) {
   if (response.status === 409 || response.status === 422) {
     throw new ConflictError('Файл изменился с другого устройства');
   }
-  if (response.status === 401 || response.status === 403) {
-    throw new AuthError('Токен не принят GitHub');
-  }
+  if (isRejection(response.status)) throw await failureFor(response);
   if (!response.ok) throw new Error(`GitHub ответил ${response.status} на запись`);
   const data = await response.json();
   return { sha: data.content.sha };

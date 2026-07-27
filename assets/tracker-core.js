@@ -48,6 +48,38 @@ export function sameEntries(a, b) {
   return left.every((value, index) => value === right[index]);
 }
 
+/**
+ * Что показывать в панели синхронизации. Отдельная функция, потому что путаница
+ * здесь стоила отдельного разбора: кнопка с подписью «Токен» в состоянии «всё
+ * отправлено» читалась как требование ввести токен. Состояние называем словами,
+ * а кнопку показываем только когда от человека действительно что-то нужно.
+ */
+export function syncState({ hasToken, pendingCount, syncing, error }) {
+  if (!hasToken) {
+    return {
+      tone: 'error',
+      label: error || 'Нужен токен',
+      button: { kind: 'token', label: 'Ввести' },
+      settings: false,
+    };
+  }
+  if (syncing) {
+    return { tone: 'pending', label: 'Отправляю…', button: null, settings: true };
+  }
+  if (error) {
+    return { tone: 'error', label: error, button: { kind: 'retry', label: 'Повторить' }, settings: true };
+  }
+  if (pendingCount > 0) {
+    return {
+      tone: 'pending',
+      label: `Не отправлено: ${pendingCount}`,
+      button: { kind: 'sync', label: 'Отправить' },
+      settings: true,
+    };
+  }
+  return { tone: 'ok', label: 'Всё отправлено', button: null, settings: true };
+}
+
 /** Статистика недели: попадаемость по дням и отдельный счётчик финишей закалки. */
 export function weekStats(entries, dates) {
   const weekDates = new Set(dates);

@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  toBase64, fromBase64, readFile, writeFile, pullWeek, syncWeek, ConflictError, AuthError,
+  toBase64, fromBase64, readFile, writeFile, pullWeek, syncWeek,
+  ConflictError, AuthError, RateLimitError, PermissionError, describeSyncError,
 } from '../assets/tracker-github.js';
 
 /** Фейковый fetch: отдаёт ответы из очереди и записывает полученные запросы. */
@@ -14,7 +15,11 @@ function fakeFetch(responses) {
     return {
       ok: next.status >= 200 && next.status < 300,
       status: next.status,
-      json: async () => next.body,
+      headers: { get: name => (next.headers || {})[name.toLowerCase()] ?? null },
+      json: async () => {
+        if (next.throwsOnJson) throw new SyntaxError('не JSON');
+        return next.body;
+      },
     };
   };
   fn.calls = calls;
@@ -182,4 +187,68 @@ test('syncWeek переживает битый JSON в репозитории, �
     localEntries: [entry], message: 'log',
   });
   assert.equal(merged.length, 1);
+});
+
+/* --- разбор отказов GitHub: не всякий 403 значит «токен плохой» --- */
+
+test('readFile при 403 из-за лимита запросов не выдаёт себя за отказ в токене', async () => {
+  const fetchFn = fakeFetch([{
+    status: 403,
+    body: { message: 'You have exceeded a secondary rate limit. Please wait a few minutes.' },
+  }]);
+  await assert.rejects(() => readFile(fetchFn, 'tok', 'x.json'), { name: 'RateLimitError' });
+});
+
+test('readFile признаёт лимит по заголовку x-ratelimit-remaining', async () => {
+  const fetchFn = fakeFetch([{
+    status: 403, body: { message: 'API rate limit exceeded' }, headers: { 'x-ratelimit-remaining': '0' },
+  }]);
+  await assert.rejects(() => readFile(fetchFn, 'tok', 'x.json'), { name: 'RateLimitError' });
+});
+
+test('readFile при 429 сообщает о лимите, а не о токене', async () => {
+  const fetchFn = fakeFetch([{ status: 429, body: { message: 'Too Many Requests' } }]);
+  await assert.rejects(() => readFile(fetchFn, 'tok', 'x.json'), { name: 'RateLimitError' });
+});
+
+test('readFile при 403 из-за нехватки прав отличает права от протухшего токена', async () => {
+  const fetchFn = fakeFetch([{
+    status: 403, body: { message: 'Resource not accessible by personal access token' },
+  }]);
+  await assert.rejects(() => readFile(fetchFn, 'tok', 'x.json'), { name: 'PermissionError' });
+});
+
+test('writeFile при 403 из-за лимита тоже не обвиняет токен', async () => {
+  const fetchFn = fakeFetch([{
+    status: 403,
+    body: { message: 'You have exceeded a secondary rate limit and have been temporarily blocked' },
+  }]);
+  await assert.rejects(
+    () => writeFile(fetchFn, 'tok', 'p.json', '{}', 'sha', 'msg'),
+    { name: 'RateLimitError' },
+  );
+});
+
+test('writeFile при 401 по-прежнему бракует токен', async () => {
+  const fetchFn = fakeFetch([{ status: 401, body: { message: 'Bad credentials' } }]);
+  await assert.rejects(
+    () => writeFile(fetchFn, 'tok', 'p.json', '{}', 'sha', 'msg'),
+    { name: 'AuthError' },
+  );
+});
+
+test('отказ без разбираемого тела не роняет разбор', async () => {
+  const fetchFn = fakeFetch([{ status: 403, body: null, throwsOnJson: true }]);
+  await assert.rejects(() => readFile(fetchFn, 'tok', 'x.json'), { name: 'PermissionError' });
+});
+
+test('describeSyncError переводит отказы на человеческий язык', () => {
+  assert.equal(describeSyncError(new AuthError('Токен не принят GitHub')), 'Токен не принят GitHub');
+  assert.equal(describeSyncError(new RateLimitError('x')), 'GitHub: лимит запросов, позже повторю сам');
+  assert.equal(describeSyncError(new PermissionError('x')), 'Токену не хватает прав на запись');
+  assert.equal(describeSyncError(new ConflictError('x')), 'Файл занят другим устройством');
+});
+
+test('describeSyncError не молчит о незнакомой поломке', () => {
+  assert.equal(describeSyncError(new TypeError('Failed to fetch')), 'Нет связи с GitHub');
 });

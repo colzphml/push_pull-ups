@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { entryKey, mergeEntries, pendingEntries, sameEntries, weekStats } from '../assets/tracker-core.js';
+import { entryKey, mergeEntries, pendingEntries, sameEntries, weekStats, syncState } from '../assets/tracker-core.js';
 
 const base = {
   date: '2026-07-27', window: 'утро', block: 'pull',
@@ -115,4 +115,61 @@ test('weekStats игнорирует записи с датами вне зап�
     { ...base, date: '2099-01-01', block: 'cold', done: 1 },
   ];
   assert.deepEqual(weekStats(entries, ['2026-07-27']), { hitDays: 0, totalDays: 1, coldFinishes: 0 });
+});
+
+/* --- состояние панели синхронизации --- */
+
+test('syncState: всё отправлено — панель молчит и не зовёт трогать токен', () => {
+  const state = syncState({ hasToken: true, pendingCount: 0, syncing: false, error: null });
+  assert.equal(state.tone, 'ok');
+  assert.equal(state.label, 'Всё отправлено');
+  assert.equal(state.button, null);
+  assert.equal(state.settings, true);
+});
+
+test('syncState: есть неотправленные — зовёт отправить и называет число', () => {
+  const state = syncState({ hasToken: true, pendingCount: 2, syncing: false, error: null });
+  assert.equal(state.tone, 'pending');
+  assert.equal(state.label, 'Не отправлено: 2');
+  assert.deepEqual(state.button, { kind: 'sync', label: 'Отправить' });
+});
+
+test('syncState: во время отправки говорит об этом и прячет кнопку', () => {
+  const state = syncState({ hasToken: true, pendingCount: 2, syncing: true, error: null });
+  assert.equal(state.tone, 'pending');
+  assert.equal(state.label, 'Отправляю…');
+  assert.equal(state.button, null);
+});
+
+test('syncState: без токена зовёт его ввести и не показывает шестерёнку', () => {
+  const state = syncState({ hasToken: false, pendingCount: 1, syncing: false, error: null });
+  assert.equal(state.tone, 'error');
+  assert.equal(state.label, 'Нужен токен');
+  assert.deepEqual(state.button, { kind: 'token', label: 'Ввести' });
+  assert.equal(state.settings, false);
+});
+
+test('syncState: без токена после отказа показывает причину, а не общее «нужен токен»', () => {
+  const state = syncState({
+    hasToken: false, pendingCount: 1, syncing: false, error: 'Токен не принят GitHub',
+  });
+  assert.equal(state.label, 'Токен не принят GitHub');
+  assert.deepEqual(state.button, { kind: 'token', label: 'Ввести' });
+});
+
+test('syncState: ошибка при живом токене видна в панели и предлагает повтор', () => {
+  const state = syncState({
+    hasToken: true, pendingCount: 1, syncing: false, error: 'GitHub: лимит запросов',
+  });
+  assert.equal(state.tone, 'error');
+  assert.equal(state.label, 'GitHub: лимит запросов');
+  assert.deepEqual(state.button, { kind: 'retry', label: 'Повторить' });
+  assert.equal(state.settings, true);
+});
+
+test('syncState: идущая отправка важнее ошибки прошлой попытки', () => {
+  const state = syncState({
+    hasToken: true, pendingCount: 1, syncing: true, error: 'GitHub: лимит запросов',
+  });
+  assert.equal(state.label, 'Отправляю…');
 });
