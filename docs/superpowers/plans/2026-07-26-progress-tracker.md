@@ -37,6 +37,7 @@
   - `entryKey(entry) -> string` — `"2026-07-27|pull|вис на перекладине"`
   - `mergeEntries(remote: Entry[], local: Entry[]) -> Entry[]` — слияние по ключу, побеждает больший `updated_at`
   - `pendingEntries(entries: Entry[], syncedAt: string|null) -> Entry[]` — записи новее последней синхронизации
+  - `sameEntries(a: Entry[], b: Entry[]) -> boolean` — совпадают ли наборы по содержимому, порядок не важен
   - `weekStats(entries: Entry[], dates: string[]) -> {hitDays: number, totalDays: number, coldFinishes: number}`
   - Тип `Entry` — объект с полями `date, window, block, exercise, planned, done, actual, felt, note, updated_at, device`
 
@@ -62,7 +63,7 @@
 ```js
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { entryKey, mergeEntries, pendingEntries, weekStats } from '../assets/tracker-core.js';
+import { entryKey, mergeEntries, pendingEntries, sameEntries, weekStats } from '../assets/tracker-core.js';
 
 const base = {
   date: '2026-07-27', window: 'утро', block: 'pull',
@@ -115,6 +116,24 @@ test('pendingEntries отбрасывает записи старее после
   const fresh = { ...base, date: '2026-07-28', updated_at: '2026-07-27T09:00:00.000Z' };
   const result = pendingEntries([base, fresh], synced);
   assert.deepEqual(result.map(e => e.date), ['2026-07-28']);
+});
+
+test('sameEntries видит одинаковые наборы независимо от порядка', () => {
+  const other = { ...base, date: '2026-07-28' };
+  assert.equal(sameEntries([base, other], [other, base]), true);
+});
+
+test('sameEntries различает наборы разной длины', () => {
+  assert.equal(sameEntries([base], [base, { ...base, date: '2026-07-28' }]), false);
+});
+
+test('sameEntries замечает правку записи по updated_at', () => {
+  const edited = { ...base, note: 'правка', updated_at: '2026-07-27T09:00:00.000Z' };
+  assert.equal(sameEntries([base], [edited]), false);
+});
+
+test('sameEntries считает два пустых набора одинаковыми', () => {
+  assert.equal(sameEntries([], []), true);
 });
 
 test('weekStats считает день попаданием при любом done=1 в push/pull/mob', () => {
@@ -197,6 +216,18 @@ export function pendingEntries(entries, syncedAt) {
   return entries.filter(e => String(e.updated_at) > String(syncedAt));
 }
 
+/**
+ * Совпадают ли два набора записей по содержимому. Порядок не важен.
+ * Достаточно ключа и updated_at: любая правка записи двигает updated_at.
+ */
+export function sameEntries(a, b) {
+  if (a.length !== b.length) return false;
+  const stamps = list => list.map(e => `${entryKey(e)}@${e.updated_at}`).sort();
+  const left = stamps(a);
+  const right = stamps(b);
+  return left.every((value, index) => value === right[index]);
+}
+
 /** Статистика недели: попадаемость по дням и отдельный счётчик финишей закалки. */
 export function weekStats(entries, dates) {
   const weekDates = new Set(dates);
@@ -219,7 +250,7 @@ export function weekStats(entries, dates) {
 - [ ] **Step 5: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 13 тестов
+Expected: PASS, 17 тестов
 
 - [ ] **Step 6: Коммит**
 
@@ -336,7 +367,7 @@ export function isTrackable(block) {
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 21 тест суммарно
+Expected: PASS, 25 тестов суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -685,7 +716,7 @@ export async function syncWeek({ fetchFn, token, path, weekStart, localEntries, 
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 39 тестов суммарно
+Expected: PASS, 43 теста суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -891,7 +922,7 @@ export class Store {
 - [ ] **Step 4: Убедиться, что тесты проходят**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 49 тестов суммарно
+Expected: PASS, 53 теста суммарно
 
 - [ ] **Step 5: Коммит**
 
@@ -919,7 +950,7 @@ git commit -m "Трекер: хранилище на устройстве (то�
 
 ```js
 // DOM-слой трекера: контролы на карточках, шторка уточнения, шапка, синхронизация.
-import { weekStats, pendingEntries, mergeEntries } from './tracker-core.js';
+import { weekStats, pendingEntries, mergeEntries, sameEntries } from './tracker-core.js';
 import { blockFromDotClass, windowFromMealType, isTrackable } from './tracker-parse.js';
 import { Store } from './tracker-store.js';
 import { pullWeek, syncWeek, AuthError } from './tracker-github.js';
@@ -1132,7 +1163,6 @@ function handleSyncError(error) {
 async function runPull() {
   const token = store.getToken();
   if (!token || syncing) { renderBar(); return; }
-  const wasDirty = isDirty();
   syncing = true;
   renderBar();
   try {
@@ -1143,8 +1173,10 @@ async function runPull() {
     });
     entries = mergeEntries(remoteEntries, entries);
     store.replaceWeek(weekStart, entries);
-    // Своего неотправленного не было — значит после слияния мы ровно то же, что в репозитории.
-    if (!wasDirty) store.setSyncedAt(weekStart, nowIso());
+    // Сравниваем с тем, что реально лежит в репозитории, а не со снимком «было ли грязно»
+    // до запроса: отметку, поставленную пока летел ответ, слияние сохранит, и она обязана
+    // остаться неотправленной. Между сравнением и записью метки нет await — вклиниться некуда.
+    if (sameEntries(entries, remoteEntries)) store.setSyncedAt(weekStart, nowIso());
     render();
   } catch (error) {
     handleSyncError(error);
@@ -1352,7 +1384,7 @@ self.addEventListener('fetch', e => {
 - [ ] **Step 4: Проверить, что модульные тесты не сломались**
 
 Run: `node --test tests/*.test.js`
-Expected: PASS, 49 тестов
+Expected: PASS, 53 теста
 
 - [ ] **Step 5: Поднять локальный сервер и проверить вручную**
 
