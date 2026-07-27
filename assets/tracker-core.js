@@ -31,6 +31,18 @@ export function pendingEntries(entries, syncedAt) {
   return entries.filter(e => String(e.updated_at) > String(syncedAt));
 }
 
+/**
+ * Совпадают ли два набора записей по содержимому. Порядок не важен.
+ * Достаточно ключа и updated_at: любая правка записи двигает updated_at.
+ */
+export function sameEntries(a, b) {
+  if (a.length !== b.length) return false;
+  const stamps = list => list.map(e => `${entryKey(e)}@${e.updated_at}`).sort();
+  const left = stamps(a);
+  const right = stamps(b);
+  return left.every((value, index) => value === right[index]);
+}
+
 /** Статистика недели: попадаемость по дням и отдельный счётчик финишей закалки. */
 export function weekStats(entries, dates) {
   const weekDates = new Set(dates);

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { entryKey, mergeEntries, pendingEntries, weekStats } from '../assets/tracker-core.js';
+import { entryKey, mergeEntries, pendingEntries, sameEntries, weekStats } from '../assets/tracker-core.js';
 
 const base = {
   date: '2026-07-27', window: 'утро', block: 'pull',
@@ -53,6 +53,24 @@ test('pendingEntries отбрасывает записи старее после
   const fresh = { ...base, date: '2026-07-28', updated_at: '2026-07-27T09:00:00.000Z' };
   const result = pendingEntries([base, fresh], synced);
   assert.deepEqual(result.map(e => e.date), ['2026-07-28']);
+});
+
+test('sameEntries видит одинаковые наборы независимо от порядка', () => {
+  const other = { ...base, date: '2026-07-28' };
+  assert.equal(sameEntries([base, other], [other, base]), true);
+});
+
+test('sameEntries различает наборы разной длины', () => {
+  assert.equal(sameEntries([base], [base, { ...base, date: '2026-07-28' }]), false);
+});
+
+test('sameEntries замечает правку записи по updated_at', () => {
+  const edited = { ...base, note: 'правка', updated_at: '2026-07-27T09:00:00.000Z' };
+  assert.equal(sameEntries([base], [edited]), false);
+});
+
+test('sameEntries считает два пустых набора одинаковыми', () => {
+  assert.equal(sameEntries([], []), true);
 });
 
 test('weekStats считает день попаданием при любом done=1 в push/pull/mob', () => {

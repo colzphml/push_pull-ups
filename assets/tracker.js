@@ -1,5 +1,5 @@
 // DOM-слой трекера: контролы на карточках, шторка уточнения, шапка, синхронизация.
-import { weekStats, pendingEntries, mergeEntries } from './tracker-core.js';
+import { weekStats, pendingEntries, mergeEntries, sameEntries } from './tracker-core.js';
 import { blockFromDotClass, windowFromMealType, isTrackable } from './tracker-parse.js';
 import { Store } from './tracker-store.js';
 import { pullWeek, syncWeek, AuthError } from './tracker-github.js';
@@ -212,7 +212,6 @@ function handleSyncError(error) {
 async function runPull() {
   const token = store.getToken();
   if (!token || syncing) { renderBar(); return; }
-  const wasDirty = isDirty();
   syncing = true;
   renderBar();
   try {
@@ -223,8 +222,10 @@ async function runPull() {
     });
     entries = mergeEntries(remoteEntries, entries);
     store.replaceWeek(weekStart, entries);
-    // Своего неотправленного не было — значит после слияния мы ровно то же, что в репозитории.
-    if (!wasDirty) store.setSyncedAt(weekStart, nowIso());
+    // Сравниваем с тем, что реально лежит в репозитории, а не со снимком «было ли грязно»
+    // до запроса: отметку, поставленную пока летел ответ, слияние сохранит, и она обязана
+    // остаться неотправленной. Между сравнением и записью метки нет await — вклиниться некуда.
+    if (sameEntries(entries, remoteEntries)) store.setSyncedAt(weekStart, nowIso());
     render();
   } catch (error) {
     handleSyncError(error);
