@@ -36,17 +36,37 @@ sqlite3 history/training.db "SELECT date,block,exercise,planned,done,felt,note F
 `-1` временно убрать (пока `valid_until`); `+1` норм; `+2` «зашло» — держать чаще.
 
 ### Факт прошлой недели (перед генерацией — обязательно)
+
 1. Прочитать `history/log/<дата_начала_прошлой_недели>.json`, если файл есть.
-2. Залить факт в `exercise_log` — по каждой записи:
+
+2. Залить факт в `exercise_log`. Ключ связи — `date + block + card_title`, где `card_title`
+   хранит точный текст `.meal-title` карточки, а поле `exercise` для этого **не годится**:
+   в нём исторически лежит другой текст, с пометкой варианта дня.
+
+   Для каждой записи лога выполнить UPDATE **с буквально подставленными значениями**.
+   Именованные параметры (`:done`, `:actual`) в CLI `sqlite3` использовать нельзя: он молча
+   подставит `NULL` и затрёт уже заполненные поля, не выдав ошибки.
+
    ```sql
    UPDATE exercise_log
-   SET done = :done, actual = :actual, felt = :felt, note = :note
-   WHERE date = :date AND block = :block AND lower(exercise) = lower(:exercise);
+   SET done = 1, actual = '3 × 20 сек', felt = 'норм', note = ''
+   WHERE date = '2026-07-27' AND block = 'pull'
+     AND lower(card_title) = lower('Вис на перекладине');
+   SELECT changes();
    ```
-   Колонка `window` — зарезервированное слово SQLite, в запросах экранировать: `"window"`.
-3. Записи с `felt = 'больно'` — **предложить** colz внести в `training_rules` с рейтингом `-2`.
+
+   Одинарные кавычки внутри значений удваивать. Колонка `window` — зарезервированное слово
+   SQLite, в запросах экранировать: `"window"`.
+
+3. **После каждого UPDATE проверять `changes()`.** Ноль означает, что строка не нашлась —
+   молча пропускать нельзя. Собрать список несопоставленных записей и показать colz:
+   что именно не легло в базу и почему (чаще всего — `card_title` пуст у недель,
+   сгенерированных до появления трекера).
+
+4. Записи с `felt = 'больно'` — **предложить** colz внести в `training_rules` с рейтингом `-2`.
    Предложить, не проставлять молча: решение за ним.
-4. Если файла лога нет или он пустой — спросить у colz про прошлую неделю словами, как раньше.
+
+5. Если файла лога нет или он пустой — спросить у colz про прошлую неделю словами, как раньше.
    Отсутствие отметок означает «нет данных», а не «ничего не сделано».
 
 ## ШАГ 2 — Принять обратную связь
@@ -96,10 +116,15 @@ VALUES ('YYYY-MM-DD','YYYY-MM-DD','weeks/2026/week_YYYY-MM-DD.html','P?','H?','�
 WEEK_ID=$(sqlite3 history/training.db "SELECT id FROM training_weeks WHERE week_start='YYYY-MM-DD';")
 # по каждому блоку дня:
 sqlite3 history/training.db "
-INSERT INTO exercise_log (week_id,date,window,block,exercise,planned)
-VALUES ($WEEK_ID,'YYYY-MM-DD','утро','pull','вис','3×20 сек');"
+INSERT INTO exercise_log (week_id,date,window,block,exercise,card_title,planned)
+VALUES ($WEEK_ID,'YYYY-MM-DD','утро','pull','вис (сразу после йоги)','Вис на перекладине','3×20 сек');"
 ```
-`done/felt/note/liked` оставить NULL — заполнит пользователь по факту.
+`done/actual/felt/note/liked` оставить NULL — заполнит трекер/пользователь по факту.
+
+При вставке строк в `exercise_log` заполнять `card_title` — **дословно тот текст, что стоит
+в `.meal-title` карточки этого упражнения**, без пометок варианта дня. Пометки («бонус»,
+«сразу после йоги») по-прежнему идут в `exercise` и в `.meal-type`, но не в `card_title`:
+это ключ связи с отметками трекера, он обязан совпадать с карточкой символ в символ.
 
 ## ШАГ 7 — Обновить index.html
 Добавь карточку новой недели ПЕРВОЙ в `.menu-list`:

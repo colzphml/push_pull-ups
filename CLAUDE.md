@@ -42,6 +42,8 @@ push `#e0a04e`, mob `#a07fc4`). Карточка: лицо + оборот-мод
 Каждая неделя подключает трекер отметок: `<script type="module" src="../../assets/tracker.js"></script>`
 перед `</body>`. Трекер читает разметку сам (дата из `.day-col[data-date]`, блок из класса
 `dot-*`, упражнение из `.meal-title`, план из `.meal-kcal`) — дополнительных атрибутов не нужно.
+В `exercise_log.card_title` при генерации писать текст `.meal-title` дословно: это ключ, по
+которому отметки находят свою строку.
 
 ## Деплой
 Репо: `https://github.com/colzphml/push_pull-ups.git`

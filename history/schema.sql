@@ -19,6 +19,7 @@ CREATE TABLE exercise_log (
   exercise TEXT,
   planned  TEXT,   -- "3×6 от стены"
   actual   TEXT,   -- "3×20 сек" — что реально вышло, из трекера
+  card_title TEXT, -- точный текст .meal-title карточки; ключ связи с отметками
   done     INTEGER,-- 1 / 0 / NULL
   felt     TEXT,   -- rpe или словом
   note     TEXT,
