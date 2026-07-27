@@ -1493,32 +1493,86 @@ cat history/log/2026-07-27.json
 ### Task 7: Приём факта в базу и в генератор недели
 
 **Files:**
-- Modify: `history/schema.sql` — добавить колонку `actual`
+- Modify: `history/schema.sql` — колонки `actual` и `card_title`
+- Modify: `history/training.db` — миграция схемы + разовое заполнение `card_title` за неделю 27.07
 - Modify: `.claude/skills/make-week/SKILL.md` — чтение факта перед генерацией
-- Modify: `CLAUDE.md` — раздел про файлы контекста и трекер
+- Modify: `CLAUDE.md` — файлы контекста и правило заполнения `card_title`
 
 **Interfaces:**
 - Consumes: формат `history/log/YYYY-MM-DD.json` из задач 1–6
 - Produces: заполненные поля `done`, `actual`, `felt`, `note` в `exercise_log`
 
+**Почему нужна колонка `card_title`.** Трекер берёт название упражнения из `.meal-title`
+карточки («Вис на перекладине»), а `exercise_log.exercise` исторически хранит другой текст,
+с пометкой варианта дня («вис (сразу после йоги)», «отжимания от стены (бонус)»). Сопоставление
+по `exercise` не найдёт ни одной строки. Пара `date + block` тоже не ключ: в 45 днях из 222 один
+блок встречается дважды («вис» и «активный вис»). Поэтому в таблицу добавляется отдельное поле
+с точным текстом карточки — исторические названия при этом остаются нетронутыми.
+
 - [ ] **Step 1: Мигрировать базу**
 
 ```bash
 sqlite3 history/training.db "ALTER TABLE exercise_log ADD COLUMN actual TEXT;"
-sqlite3 history/training.db "PRAGMA table_info(exercise_log);" | grep actual
+sqlite3 history/training.db "ALTER TABLE exercise_log ADD COLUMN card_title TEXT;"
+sqlite3 history/training.db "PRAGMA table_info(exercise_log);" | grep -E "actual|card_title"
 ```
 
-Expected: строка вида `10|actual|TEXT|0||0`
+Expected: две строки — `actual` и `card_title`, обе `TEXT`
 
 - [ ] **Step 2: Отразить миграцию в `history/schema.sql`**
 
 В определении `exercise_log` после строки с `planned` добавить:
 
 ```sql
-  actual   TEXT,   -- "3×20 сек" — что реально вышло, из трекера
+  actual     TEXT,   -- "3×20 сек" — что реально вышло, из трекера
+  card_title TEXT,   -- точный текст .meal-title карточки; ключ связи с отметками
 ```
 
-- [ ] **Step 3: Проверить заливку факта — на копии, а не на живой базе**
+- [ ] **Step 3: Разово заполнить `card_title` за неделю 27.07**
+
+Это единственная уже сгенерированная неделя, к которой подключён трекер. Заполняем из её HTML,
+сопоставляя по порядку карточек внутри дня — он совпадает с порядком строк в базе.
+
+```bash
+python3 - <<'PYEOF'
+import re, sqlite3, html
+
+page = open('weeks/2026/week_2026-07-27.html', encoding='utf-8').read()
+db = sqlite3.connect('history/training.db')
+
+def strip(s):
+    return html.unescape(re.sub(r'<[^>]+>', '', s)).strip()
+
+updated, skipped = 0, []
+for day in re.findall(r'data-date="(\d{4}-\d{2}-\d{2})"(.*?)(?=data-date="|\Z)', page, re.S):
+    date, block_html = day
+    for front in re.findall(r'<div class="card-front[^"]*">(.*?)</div>\s*<div class="card-back"', block_html, re.S):
+        dot = re.search(r'dot-(\w+)', front)
+        title = re.search(r'class="meal-title">(.*?)</div>', front, re.S)
+        if not dot or not title:
+            continue
+        block, card = dot.group(1), strip(title.group(1))
+        rows = db.execute(
+            'SELECT id FROM exercise_log WHERE date = ? AND block = ? AND card_title IS NULL ORDER BY id',
+            (date, block)).fetchall()
+        if len(rows) == 1:
+            db.execute('UPDATE exercise_log SET card_title = ? WHERE id = ?', (card, rows[0][0]))
+            updated += 1
+        else:
+            skipped.append((date, block, card, len(rows)))
+
+db.commit()
+print(f'заполнено: {updated}')
+for s in skipped:
+    print('  не сопоставлено:', s)
+PYEOF
+```
+
+Expected: `заполнено: 28`, список несопоставленных пуст.
+
+Если что-то не сопоставилось — разобрать вручную, не оставлять молча.
+
+- [ ] **Step 4: Проверить заливку факта — на копии, а не на живой базе**
 
 `history/training.db` — реальная история тренировок. Записывать в неё выдуманный факт нельзя:
 `done = 1` там означает, что человек действительно сделал подход. Проверяем на копии.
@@ -1526,18 +1580,23 @@ Expected: строка вида `10|actual|TEXT|0||0`
 ```bash
 cp history/training.db /tmp/ppu-check.db
 sqlite3 /tmp/ppu-check.db "
-UPDATE exercise_log SET done = 1, actual = '3 × 20 сек', felt = 'норм'
-WHERE date = '2026-07-27' AND block = 'pull' AND exercise LIKE 'Вис%';
-SELECT date, \"window\", block, exercise, planned, actual, done, felt
+UPDATE exercise_log
+SET done = 1, actual = '3 × 20 сек', felt = 'норм', note = ''
+WHERE date = '2026-07-27' AND block = 'pull' AND lower(card_title) = lower('Вис на перекладине');
+SELECT changes();
+SELECT date, \"window\", block, exercise, card_title, actual, done, felt
 FROM exercise_log WHERE date = '2026-07-27' AND block = 'pull';"
 rm /tmp/ppu-check.db
 ```
 
-Expected: у строки виса заполнены `done`, `actual`, `felt`. Обратить внимание: `window` экранирован двойными кавычками — это зарезервированное слово SQLite.
+Expected: `changes()` вернёт `1`, у строки заполнены `done`, `actual`, `felt`.
 
-В саму `history/training.db` этой задачей вносится **только** миграция схемы из шага 1. Факт туда попадёт при первом запуске `/make-week` — из реальных отметок.
+Обратить внимание: `window` экранирован двойными кавычками — это зарезервированное слово SQLite.
 
-- [ ] **Step 4: Добавить в скилл `make-week` чтение факта**
+В саму `history/training.db` этой задачей вносятся **только** миграция схемы и заполнение
+`card_title`. Факт туда попадёт при первом запуске `/make-week` — из реальных отметок.
+
+- [ ] **Step 5: Добавить в скилл `make-week` чтение факта**
 
 В файл скилла, в раздел о чтении контекста перед генерацией, добавить:
 
@@ -1545,22 +1604,53 @@ Expected: у строки виса заполнены `done`, `actual`, `felt`. 
 ### Факт прошлой недели (перед генерацией — обязательно)
 
 1. Прочитать `history/log/<дата_начала_прошлой_недели>.json`, если файл есть.
-2. Залить факт в `exercise_log` — по каждой записи:
+
+2. Залить факт в `exercise_log`. Ключ связи — `date + block + card_title`, где `card_title`
+   хранит точный текст `.meal-title` карточки, а поле `exercise` для этого **не годится**:
+   в нём исторически лежит другой текст, с пометкой варианта дня.
+
+   Для каждой записи лога выполнить UPDATE **с буквально подставленными значениями**.
+   Именованные параметры (`:done`, `:actual`) в CLI `sqlite3` использовать нельзя: он молча
+   подставит `NULL` и затрёт уже заполненные поля, не выдав ошибки.
+
    ```sql
    UPDATE exercise_log
-   SET done = :done, actual = :actual, felt = :felt, note = :note
-   WHERE date = :date AND block = :block AND lower(exercise) = lower(:exercise);
+   SET done = 1, actual = '3 × 20 сек', felt = 'норм', note = ''
+   WHERE date = '2026-07-27' AND block = 'pull'
+     AND lower(card_title) = lower('Вис на перекладине');
+   SELECT changes();
    ```
-   Колонка `window` — зарезервированное слово SQLite, в запросах экранировать: `"window"`.
-3. Записи с `felt = 'больно'` — **предложить** colz внести в `training_rules` с рейтингом `-2`.
+
+   Одинарные кавычки внутри значений удваивать. Колонка `window` — зарезервированное слово
+   SQLite, в запросах экранировать: `"window"`.
+
+3. **После каждого UPDATE проверять `changes()`.** Ноль означает, что строка не нашлась —
+   молча пропускать нельзя. Собрать список несопоставленных записей и показать colz:
+   что именно не легло в базу и почему (чаще всего — `card_title` пуст у недель,
+   сгенерированных до появления трекера).
+
+4. Записи с `felt = 'больно'` — **предложить** colz внести в `training_rules` с рейтингом `-2`.
    Предложить, не проставлять молча: решение за ним.
-4. Если файла лога нет или он пустой — спросить у colz про прошлую неделю словами, как раньше.
+
+5. Если файла лога нет или он пустой — спросить у colz про прошлую неделю словами, как раньше.
    Отсутствие отметок означает «нет данных», а не «ничего не сделано».
-5. При генерации новой недели вставить перед `</body>`:
-   `<script type="module" src="../../assets/tracker.js"></script>`
 ```
 
-- [ ] **Step 5: Обновить `CLAUDE.md`**
+- [ ] **Step 6: Прописать в скилле заполнение `card_title` при генерации недели**
+
+В раздел записи новой недели в БД добавить:
+
+```markdown
+При вставке строк в `exercise_log` заполнять `card_title` — **дословно тот текст, что стоит
+в `.meal-title` карточки этого упражнения**, без пометок варианта дня. Пометки («бонус»,
+«сразу после йоги») по-прежнему идут в `exercise` и в `.meal-type`, но не в `card_title`:
+это ключ связи с отметками трекера, он обязан совпадать с карточкой символ в символ.
+
+В сгенерированную неделю добавить перед `</body>`:
+`<script type="module" src="../../assets/tracker.js"></script>`
+```
+
+- [ ] **Step 7: Обновить `CLAUDE.md`**
 
 В таблицу «Файлы контекста» добавить строку:
 
@@ -1574,24 +1664,27 @@ Expected: у строки виса заполнены `done`, `actual`, `felt`. 
 Каждая неделя подключает трекер отметок: `<script type="module" src="../../assets/tracker.js"></script>`
 перед `</body>`. Трекер читает разметку сам (дата из `.day-col[data-date]`, блок из класса
 `dot-*`, упражнение из `.meal-title`, план из `.meal-kcal`) — дополнительных атрибутов не нужно.
+В `exercise_log.card_title` при генерации писать текст `.meal-title` дословно: это ключ, по
+которому отметки находят свою строку.
 ```
 
-- [ ] **Step 6: Проверить, что база не сломалась**
+- [ ] **Step 8: Проверить, что база цела**
 
 ```bash
 sqlite3 history/training.db "PRAGMA integrity_check; SELECT COUNT(*) FROM exercise_log;"
+sqlite3 history/training.db "SELECT COUNT(*) FROM exercise_log WHERE card_title IS NOT NULL;"
+sqlite3 history/training.db "SELECT COUNT(*) FROM exercise_log WHERE actual IS NOT NULL;"
+node --test tests/*.test.js
 ```
 
-Expected: `ok` и `267`
+Expected: `ok` и `267`; `card_title` заполнен у 28 строк; `actual` — у 0; тесты 53/53.
 
-- [ ] **Step 7: Коммит**
+- [ ] **Step 9: Коммит**
 
 ```bash
 git add history/schema.sql history/training.db CLAUDE.md .claude/
-git commit -m "Трекер: приём факта в exercise_log, колонка actual, обновление make-week"
+git commit -m "Трекер: приём факта в exercise_log, колонки actual и card_title, обновление make-week"
 ```
-
----
 
 ## Порядок и зависимости
 
