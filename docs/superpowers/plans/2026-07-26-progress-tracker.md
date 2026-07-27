@@ -1327,7 +1327,9 @@ function mount() {
   if (header) header.appendChild(bar);
 
   render();
-  runPull();
+  // Сначала подтягиваем чужие отметки, затем досылаем свои: так неотправленное
+  // после прошлого сбоя действительно уедет при следующем открытии страницы.
+  runPull().then(runSync);
 }
 
 if (document.readyState === 'loading') {
