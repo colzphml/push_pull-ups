@@ -18,6 +18,7 @@ CREATE TABLE exercise_log (
   block    TEXT,   -- push / pull / mob
   exercise TEXT,
   planned  TEXT,   -- "3×6 от стены"
+  actual   TEXT,   -- "3×20 сек" — что реально вышло, из трекера
   done     INTEGER,-- 1 / 0 / NULL
   felt     TEXT,   -- rpe или словом
   note     TEXT,

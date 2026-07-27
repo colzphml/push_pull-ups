@@ -15,6 +15,7 @@
 | `plan/cold.md` | мастер-план закаливания: лестница C0–C7, красные линии, сезонная карта |
 | `equipment.md` | турник, резинки (только на турник!), опоры |
 | `history/training.db` | SQLite: weeks, exercise_log, progress, training_rules |
+| `history/log/*.json` | факт выполнения с сайта (трекер) — заливать в `exercise_log` перед генерацией |
 
 ## Главный скилл
 `/make-week` — генерирует следующую неделю. Запускать через Skill tool.
@@ -37,6 +38,10 @@
 Эталон: `weeks/2026/week_2026-05-25.html`. Тема — холодная (`--accent:#4f9dd9`,
 push `#e0a04e`, mob `#a07fc4`). Карточка: лицо + оборот-модалка (техника). Вкладки
 Дни/Прогрессия/Техника. Один человек — без person-switch. SW: `/push_pull-ups/sw.js`.
+
+Каждая неделя подключает трекер отметок: `<script type="module" src="../../assets/tracker.js"></script>`
+перед `</body>`. Трекер читает разметку сам (дата из `.day-col[data-date]`, блок из класса
+`dot-*`, упражнение из `.meal-title`, план из `.meal-kcal`) — дополнительных атрибутов не нужно.
 
 ## Деплой
 Репо: `https://github.com/colzphml/push_pull-ups.git`
