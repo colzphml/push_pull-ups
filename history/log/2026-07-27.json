@@ -39,6 +39,19 @@
       "note": "",
       "updated_at": "2026-07-27T08:30:10.877Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-07-28",
+      "window": "утро",
+      "block": "mob",
+      "exercise": "Йога 10 минут + запястья/плечи",
+      "planned": "10 мин + 40 сек",
+      "done": 1,
+      "actual": "10 мин + 40 сек",
+      "felt": "норм",
+      "note": "",
+      "updated_at": "2026-07-28T05:18:35.600Z",
+      "device": "phone"
     }
   ]
 }
