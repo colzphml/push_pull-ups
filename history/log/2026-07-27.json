@@ -78,6 +78,19 @@
       "note": "",
       "updated_at": "2026-07-31T18:14:38.869Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-08-01",
+      "window": "сразу после йоги",
+      "block": "push",
+      "exercise": "Отжимания от стены",
+      "planned": "3 × 10-12",
+      "done": 1,
+      "actual": "3 × 12",
+      "felt": "норм",
+      "note": "",
+      "updated_at": "2026-08-01T16:28:46.846Z",
+      "device": "phone"
     }
   ]
 }
