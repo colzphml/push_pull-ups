@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Неделя 11 · Считаем всё, что движется (10 – 16 августа)</title>
+<link rel="manifest" href="/push_pull-ups/manifest.json">
+<meta name="theme-color" content="#0e1217">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Push·Pull">
+<link rel="apple-touch-icon" href="/push_pull-ups/icons/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1217; --surface:#161d26; --card:#1b232e; --card-back:#1f2a37;
+    --border:#2c3a48; --accent:#4f9dd9; --accent-push:#e0a04e; --accent-mob:#a07fc4;
+    --text:#e6edf3; --text-muted:#8b9bab; --text-dim:#51606e;
+    --tag-bg:#202b38; --shadow:0 8px 32px rgba(0,0,0,0.55);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:0 0 60px}
+  body{padding-bottom:env(safe-area-inset-bottom,16px)}
+  .back-link{display:inline-flex;align-items:center;gap:6px;padding:20px 24px 0;font-size:13px;color:var(--text-muted);text-decoration:none;font-weight:500;transition:color .2s}
+  .back-link{padding-top:max(20px,calc(env(safe-area-inset-top) + 8px))}
+  .back-link:hover{color:var(--accent)}
+  header{padding:16px 24px 0;text-align:center;position:relative}
+  header::after{content:'';display:block;width:60px;height:2px;background:var(--accent);margin:14px auto 0;border-radius:2px}
+  header h1{font-family:'Playfair Display',serif;font-size:clamp(22px,5vw,34px);font-weight:700;letter-spacing:-0.5px;color:var(--text)}
+  header p{margin-top:6px;color:var(--text-muted);font-size:13px;font-weight:300;letter-spacing:0.5px}
+  nav{display:flex;justify-content:center;gap:6px;padding:28px 20px 0;flex-wrap:wrap}
+  .nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:9px 20px;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;letter-spacing:0.3px}
+  .nav-btn.active{background:var(--accent);border-color:var(--accent);color:#0e1217}
+  .nav-btn:hover:not(.active){border-color:var(--accent);color:var(--accent)}
+  .section{display:none;padding:28px 16px 0;max-width:1100px;margin:0 auto}
+  .section.active{display:block}
+  .days-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  @media (max-width:700px){.days-grid{grid-template-columns:1fr}}
+  .day-label{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--accent);text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);letter-spacing:0.5px}
+  .day-sub{font-size:11px;color:var(--text-dim);display:block;margin-top:3px;font-weight:400}
+  .flip-wrap{margin-bottom:10px;cursor:pointer}
+  .flip-inner{position:relative;width:100%}
+  .card-front{width:100%;border-radius:14px;padding:14px 16px;border:1px solid var(--border);background:var(--card);position:relative;transition:border-color .2s,box-shadow .2s,transform .1s}
+  .card-back{display:none}
+  .flip-wrap:hover .card-front{border-color:var(--accent);box-shadow:0 0 0 1px #4f9dd933}
+  .flip-wrap:active .card-front{transform:scale(0.98)}
+  .card-front.opt{border-style:dashed;background:#171f29}
+  .opt-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-dim);border:1px solid var(--border);border-radius:100px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+  .min-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#0e1217;background:var(--accent);border-radius:100px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  .new-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#0e1217;background:var(--accent-push);border-radius:100px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  .own-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#0e1217;background:var(--accent-mob);border-radius:100px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  #card-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+  #card-modal.active{display:flex}
+  #card-modal-inner{background:var(--card-back);border:1px solid var(--border);border-radius:16px;padding:20px 20px 16px;width:min(360px,100%);max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.6);animation:modalIn .2s ease}
+  @keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-close{position:absolute;top:10px;right:12px;font-size:16px;cursor:pointer;color:var(--text-muted);background:none;border:none;line-height:1;padding:4px;transition:color .15s}
+  .modal-close:hover{color:var(--text)}
+  .meal-type{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);font-weight:500;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .meal-type-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+  .dot-pull{background:#4f9dd9}
+  .dot-push{background:#e0a04e}
+  .dot-mob{background:#a07fc4}
+  .dot-cold{background:#5ec8d8}
+  .dot-steps{background:#6cc08b}
+  .dot-rest{background:#51606e}
+  .meal-title{font-size:14px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:8px}
+  .meal-kcal{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--tag-bg);border:1px solid var(--border);padding:2px 9px;border-radius:100px}
+  .flip-hint{position:absolute;bottom:10px;right:12px;font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:3px}
+  .back-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;font-weight:500}
+  .portion-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);gap:8px}
+  .portion-row:last-child{border-bottom:none}
+  .portion-name{font-size:12.5px;color:var(--text);font-weight:400;flex:1}
+  .portion-amount{font-size:12px;color:var(--accent);font-weight:500;white-space:nowrap}
+  .recipe-divider{height:1px;background:var(--border);margin:12px 0 10px}
+  .recipe-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:500;margin-bottom:8px}
+  .recipe-step{display:flex;gap:10px;margin-bottom:7px;align-items:flex-start}
+  .recipe-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--tag-bg);border:1px solid var(--accent);color:var(--accent);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center}
+  .recipe-text{font-size:12.5px;line-height:1.6;color:var(--text);padding-top:1px}
+  .recipe-text strong{color:var(--accent-push);font-weight:500}
+  .recipe-text em{color:var(--accent);font-style:normal}
+  .recipe-note{font-size:12px;color:var(--text-muted);font-style:italic;margin-top:8px;line-height:1.5}
+  .info-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;margin-bottom:16px}
+  .info-card h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+  .cook-block{margin-bottom:26px}
+  .cook-block h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--accent-push);margin-bottom:10px}
+  .cook-step{display:flex;gap:14px;margin-bottom:12px;align-items:flex-start}
+  .step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--tag-bg);border:1px solid var(--accent);color:var(--accent);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center}
+  .step-text{font-size:13.5px;line-height:1.6;color:var(--text);padding-top:3px}
+  .step-text strong{color:var(--accent-push);font-weight:500}
+  .step-text em{color:var(--accent);font-style:normal}
+  .tip-box{background:#13202b;border:1px solid #25455a;border-radius:10px;padding:12px 16px;margin-top:10px;font-size:12.5px;color:var(--text-muted);line-height:1.6}
+  .tip-box::before{content:'💡 '}
+  .warn-box{background:#2a1c17;border:1px solid #6b3f2a;border-radius:10px;padding:12px 16px;margin-top:10px;font-size:12.5px;color:#e3c3ae;line-height:1.6}
+  .warn-box::before{content:'🛟 '}
+  .day-col.today .day-label{color:var(--accent-push)}
+  .today-badge{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#0e1217;background:var(--accent-push);border-radius:100px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  .past-header{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);font-weight:500;padding:24px 0 12px;border-top:1px solid var(--border);margin-top:8px;grid-column:1 / -1}
+  .day-col.past .day-label{color:var(--text-dim)}
+  .day-col.past .card-front{opacity:0.55}
+  .day-col.light .day-label{color:var(--accent-mob);border-bottom-color:var(--accent-mob)}
+  .light-banner{background:#231d2e;border:1px dashed var(--accent-mob);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#c9b8e6;line-height:1.55}
+  .light-banner strong{color:#ddccf2}
+  .week-banner{grid-column:1 / -1;background:#13202b;border:1px solid #25455a;border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:12.5px;color:var(--text-muted);line-height:1.6}
+  .week-banner strong{color:var(--accent)}
+  .stack-banner{grid-column:1 / -1;background:#221c2d;border:1px solid #4a3b63;border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:12.5px;color:#c9b8e6;line-height:1.6}
+  .stack-banner strong{color:var(--accent-mob)}
+  .cold-banner{grid-column:1 / -1;background:#102a30;border:1px solid #2a5560;border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:12.5px;color:#bfe6ec;line-height:1.6}
+  .cold-banner strong{color:#5ec8d8}
+  .steps-banner{grid-column:1 / -1;background:#14281f;border:1px solid #2a5a45;border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:12.5px;color:#c2e6cf;line-height:1.6}
+  .steps-banner strong{color:#6cc08b}
+  .ex-figure{display:flex;gap:22px;align-items:flex-end;justify-content:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 16px 14px;margin:4px 0 16px}
+  .ex-phase{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .ex-phase .cap{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--text-dim);text-align:center;max-width:180px;line-height:1.4}
+  .ex-figure svg{display:block;overflow:visible}
+  .ex-sub{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);font-weight:500;margin:14px 0 7px}
+  #ptr{position:fixed;top:-76px;left:50%;transform:translateX(-50%);width:44px;height:76px;z-index:999;pointer-events:none;opacity:0}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../../index.html">← Все недели</a>
+<header>
+  <h1>Неделя 11 · Считаем всё, что движется</h1>
+  <p>10 – 16 августа 2026 · 4 карточки в день · 🚶 новое: 10 000 шагов · ➕ трекер пишет любые активности · цель: силовой в 3 днях · Чт и Вс полегче</p>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="showSection('days')">📅 Дни</button>
+  <button class="nav-btn" onclick="showSection('progress')">📈 Прогрессия</button>
+  <button class="nav-btn" onclick="showSection('tech')">🧰 Техника</button>
+</nav>
+
+<section class="section active" id="days">
+  <div class="days-grid">
+
+    <div class="week-banner">
+      <strong>Неделя 10 по трекеру: одна отметка.</strong> Вторник, отжимания P1 — <em>2×8, «норм»</em>. Ты и сам сказал: почти ничего не делал. Но в этой же неделе было то, чего трекер не видел: <strong>пятница–воскресенье стабильно больше 10 000 шагов в день</strong>. Это не «ничего» — это движение мимо системы учёта. Делаю три вещи: цель силового опускаю до <strong>3 дней из 7</strong> (четыре не взялись — по уговору упрощаем, а не наращиваем), шаги становятся полноправной карточкой дня, а трекер теперь умеет записывать вообще любую активность. Пусть система видит всё, что ты делаешь, а не только то, что назначил я.
+    </div>
+
+    <div class="steps-banner">
+      <strong>🚶 Новый блок: 10 000 шагов.</strong> Карточка есть в каждом дне, отметка — вечером, если шагомер показал 10 000+. Пятница–воскресенье у тебя уже такие — задача недели их <strong>не потерять</strong>; каждый будний день с 10к — чистый бонус сверху. При твоём весе 10 000 шагов — это порядка 500–700 ккал за день и главный вклад в снижение веса прямо сейчас. И новая связка вместо расписания: <strong>вернулся с прогулки — повис 20 секунд</strong>. Руки свободны, ты уже в движении, турник по дороге.
+    </div>
+
+    <div class="stack-banner">
+      <strong>➕ Трекер научился записывать что угодно.</strong> Внизу каждого дня появилась кнопка «+ активность». Как пользоваться: ① нажми её в нужном дне (прошедшие дни — внизу страницы, вчерашнее дописывать можно и нужно) → ② выбери готовое (прогулка, велосипед, плавание, зарядка…) или впиши своё словами → ③ по желанию добавь «сколько» (40 мин · 5 км) → ④ жми «Добавить». Карточка появится в дне уже с галочкой, уедет в git вместе с остальными отметками, и я разберу её при генерации следующей недели. Ошибся — открой карточку и жми «Удалить».
+    </div>
+
+    <div class="cold-banner">
+      <strong>❄️ Закалка — без изменений.</strong> Неделя 10 по холоду прошла без отметок — счётчик «❄️ август» просто продолжается, ничего не сгорело и не обнулилось. Схема прежняя, она уже брала цель: <strong>10 секунд</strong> в конце любого душа, цель <strong>3-4 плюсика</strong> за неделю, ступень C0.
+    </div>
+
+    <!-- ПОНЕДЕЛЬНИК 10 -->
+    <div class="day-col" data-date="2026-08-10">
+      <div class="day-label">Понедельник, 10 августа<span class="day-sub">4 карточки · старт</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Йога<span class="own-tag">твоё</span></div><div class="meal-title">Йога 10 минут + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Йога — твоя, без долга</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 мин</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="portion-row"><span class="portion-name">Статус</span><span class="portion-amount">личное дело</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Как делал, так и делай — содержание твоё, я в него не лезу. Ни к чему не пришита: коврик можно сворачивать сразу.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">В конце по желанию 40 сек: <strong>запястья</strong> (ладони от себя/к себе по 15 сек) + <strong>плечи</strong> (вращения 10 сек).</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Не случилась — не минус и не провал. Просто отдельный плюсик, когда случилась.</div></div><div class="recipe-note">Прошлая неделя по йоге пустая — начинаем заново без разбора полётов. Понедельник — самый простой день, чтобы расстелить коврик.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Когда угодно · Подтягивания<span class="min-tag">минимум</span></div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">минимум 1 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — один подход закрывает день</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="portion-row"><span class="portion-name">Когда</span><span class="portion-amount">любой момент дня</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это работает</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Один подход на 20 секунд — и день засчитан.</strong> Правило прошлой недели живо, оно не отменяется. Прошёл мимо турника — повис: в ванную, на кухню, за телефоном.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Техника: хват на ширине плеч, плечи <em>опустить от ушей</em>, дышать ровно, не раскачиваться. Слезать <strong>до</strong> срыва хвата.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Не тянет 20 из-за хвата — поставь носки на пол или табурет и сними часть веса. Время под нагрузкой важнее чистоты подвеса.</div></div><div class="recipe-note">Вис не отмечен ни разу за две недели. Сегодня задача — не три подхода, а один: просто повиснуть. Двадцать секунд, и день зелёный.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги<span class="new-tag">новое</span></div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Шаги — новый пункт дня</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Это примерно</span><span class="portion-amount">7–8 км</span></div><div class="portion-row"><span class="portion-name">Отметка</span><span class="portion-amount">вечером, по шагомеру</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это устроено</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Считает телефон в кармане или часы — <strong>ничего специально включать не надо</strong>. Вечером глянул цифру: 10 000+ есть → галочка на этой карточке.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">10 000 за один заход не нужны: <strong>2-3 выхода по 25-40 минут</strong> плюс бытовая ходьба складываются сами.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Будний день — новая территория (твои 10к пока жили в пт-вс). Не добрал — ничего страшного, но галочка только за честные 10 000.</div></div><div class="recipe-note">Ты сам попросил этот пункт — значит, он твой, как йога. Я только считаю и подстраиваю неделю под факт.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка</div><div class="meal-title">Холодный финиш C0</div><span class="meal-kcal">10 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Холодный финиш — рабочая схема</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 сек</span></div><div class="portion-row"><span class="portion-name">Когда</span><span class="portion-amount">любой душ за день</span></div><div class="portion-row"><span class="portion-name">Голова</span><span class="portion-amount">не мочить</span></div><div class="recipe-divider"></div><div class="recipe-label">Как заходить</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Конец душа → холодная. <strong>Конечности первыми:</strong> кисти и стопы → руки и ноги → спина. Грудь и голову на C0 не трогаем.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Все 10 секунд — длинный медленный <em>выдох</em>: вдох носом 2-3 сек, выдох ртом 4-6 сек. Плечи вниз.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Досчитал — полотенце — <strong>плюсик в заметку «❄️ август»</strong> и галочка здесь. Цель недели 3-4.</div></div><div class="recipe-note">Эта схема — единственная, которая уже брала свою цель (3 из 7 на неделе 9). Поэтому в ней не меняется ни буквы.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ВТОРНИК 11 -->
+    <div class="day-col" data-date="2026-08-11">
+      <div class="day-label">Вторник, 11 августа<span class="day-sub">4 карточки · день P1</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Йога<span class="own-tag">твоё</span></div><div class="meal-title">Йога 10 минут + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Йога — и особенно запястья</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 мин</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Как обычно. В конце — <strong>запястья 30 сек</strong>: ладони от себя, ладони к себе.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Сегодня день отжиманий: <em>P1 грузит кисть сильнее стены</em>, разогретые запястья это чувствуют.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Йоги не было — просто покрути запястьями 20 секунд перед первым подходом. Этого достаточно.</div></div><div class="recipe-note">Если в йоге есть планка или собака мордой вниз — запястья уже разогреты, отдельно можно не делать.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>Когда угодно · Отжимания<span class="min-tag">минимум</span></div><div class="meal-title">Отжимания от опоры (P1)</div><span class="meal-kcal">минимум 1 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">P1 — единственное, что сработало</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 8</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 8</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="portion-row"><span class="portion-name">Опора</span><span class="portion-amount">та же, что в прошлый раз</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Единственная отметка прошлой недели — ровно эта карточка:</strong> вторник, 2×8, «норм». Схема работает — повтори её без изменений.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Та же опора, ладони на ширине плеч, тело — <strong>планка</strong> от пяток до головы. Локти ~45° к корпусу, грудь к краю, обратно до прямых рук.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Восемь повторов — день закрыт. Идёт легко — второй и третий подход в течение дня, это бонус.</div></div><div class="recipe-note">🛟 Опора капитальная: подоконник, встроенная столешница, тяжёлый стол у стены. Тяжело — шагни ближе к опоре или доделай от стены.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Шаги — где их брать в будни</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Отметка</span><span class="portion-amount">вечером</span></div><div class="recipe-divider"></div><div class="recipe-label">Откуда берутся будние шаги</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Выйти <strong>на одну остановку раньше</strong> или припарковаться дальше — плюс 1-1.5 тысячи, почти бесплатно.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Любой звонок или подкаст — <strong>на ногах</strong>: полчаса разговора шагами по комнате или улице = 2-3 тысячи.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Вечером кружок вокруг квартала на 20-25 минут закрывает остаток. Заодно по дороге домой — турник и вис.</div></div><div class="recipe-note">Не добрал в будни — это не провал: базовая задача недели — удержать пт-вс. Но каждый будний день с 10к — прямой вклад в вес.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка</div><div class="meal-title">Холодный финиш C0</div><span class="meal-kcal">10 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Холодный финиш — C0</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 сек</span></div><div class="portion-row"><span class="portion-name">Когда</span><span class="portion-amount">любой душ за день</span></div><div class="portion-row"><span class="portion-name">Голова</span><span class="portion-amount">не мочить</span></div><div class="recipe-divider"></div><div class="recipe-label">Как заходить</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Решение «иду» принимай <strong>до воды</strong>, не у крана. У крана торговаться уже не с чем.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Кисти/стопы → руки/ноги → спина. Длинный <em>выдох</em>, плечи вниз.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">10 сек — полотенце — плюсик. Вся задача.</div></div><div class="recipe-note">Нездоровится (горло, температура, ломота) — холод пропускаем полностью, и силовое тоже.</div></div>
+      </div></div>
+    </div>
+
+    <!-- СРЕДА 12 -->
+    <div class="day-col" data-date="2026-08-12">
+      <div class="day-label">Среда, 12 августа<span class="day-sub">4 карточки · день-минимум</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Йога<span class="own-tag">твоё</span></div><div class="meal-title">Йога 10 минут + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Йога — 3 минуты тоже считаются</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 мин</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Среда — исторически самый пустой день: три недели подряд в ней не случалось почти ничего.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Договор прежний: <strong>3 минуты тоже считаются</strong>. Расстелил коврик, подышал, потянулся — плюсик твой.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Совсем нет — пропускай без вины. Главное в среде — один силовой подход, любой.</div></div><div class="recipe-note">Если среда перестанет быть нулевой — это будет результат недели, важнее любых цифр.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Когда угодно · Подтягивания<span class="min-tag">минимум</span></div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">минимум 1 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — 20 секунд против пустой среды</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Когда</span><span class="portion-amount">любой момент дня</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это работает</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">«Не доходят ноги до турника» — значит, не ищем время, а цепляемся за маршрут: <strong>прошёл мимо — повис</strong>. Идёшь в душ, на кухню, за телефоном — 20 секунд по дороге.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Плечи от ушей вниз, дыхание ровное, тело спокойно висит. Досчитал до 20 — <strong>свободен</strong>.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Хват не тянет — носки на пол или табурет, часть веса на ноги. Это рабочий вариант, а не поблажка.</div></div><div class="recipe-note">Больше в среде ничего силового нет. Один подход — и она уже не нулевая.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Шаги — мелочью по часу</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Отметка</span><span class="portion-amount">вечером</span></div><div class="recipe-divider"></div><div class="recipe-label">Приём для сидячего дня</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Каждый час — <strong>встать и пройтись 3-5 минут</strong>: по квартире, до кухни, по лестнице. К вечеру это уже 2-3 тысячи, не выходя из дома.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Проверь счётчик <strong>в середине дня</strong>, а не в 23:00: в обед видно, сколько ещё догулять, вечером — уже нет.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Вечерний кружок 20-25 минут — и цифра сходится.</div></div><div class="recipe-note">Шагомер в телефоне считает только когда телефон с тобой — держи его в кармане, не на столе.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка</div><div class="meal-title">Холодный финиш C0</div><span class="meal-kcal">10 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Холодный финиш — C0</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 сек</span></div><div class="portion-row"><span class="portion-name">Когда</span><span class="portion-amount">любой душ за день</span></div><div class="portion-row"><span class="portion-name">Голова</span><span class="portion-amount">не мочить</span></div><div class="recipe-divider"></div><div class="recipe-label">Как заходить</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Конец душа → холодная. Кисти/стопы → руки/ноги → спина.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Длинный <em>выдох</em>, плечи вниз, чуть переминайся. 10 сек — и выходи.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Совсем нет настроя — <strong>только кисти и стопы</strong>. Плюсик всё равно полный.</div></div><div class="recipe-note">На неделе 9 счёт открылся в четверг. Плюсик в среду — на день раньше твоего же графика.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ЧЕТВЕРГ 13 — ЛЁГКИЙ -->
+    <div class="day-col light" data-date="2026-08-13">
+      <div class="day-label">Четверг, 13 августа<span class="day-sub">лёгкий · вис отдыхает</span></div>
+      <div class="light-banner"><strong>Лёгкий день.</strong> Виса нет вообще — хвату и ладоням нужен день отдыха. Отжимания вполовину и ближе к опоре. Шаги и холодный финиш — как обычно: ходьба и вода — не тренировка. <strong>День с одной йогой, шагами и плюсиком ❄️ официально зелёный.</strong></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Йога<span class="own-tag">твоё</span></div><div class="meal-title">Йога 10 минут + мобилити дольше</div><span class="meal-kcal">10 мин + 2 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Йога + мобилити — суть лёгкого дня</div><div class="portion-row"><span class="portion-name">Йога</span><span class="portion-amount">10 мин</span></div><div class="portion-row"><span class="portion-name">Мобилити после</span><span class="portion-amount">2 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Что добавить в конце</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья:</strong> ладони от себя и к себе, по 30 сек в каждую сторону.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения вперёд/назад, растяжка в дверном проёме, «доставание лопаток» — 30 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Грудной отдел:</strong> кошка-корова 30 сек со спокойным дыханием.</div></div><div class="recipe-note">Суставы под 130 кг стоят дороже любых секунд виса. В лёгкий день они — главное блюдо.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>Когда угодно · Отжимания<span class="min-tag">минимум</span></div><div class="meal-title">Отжимания от опоры (лёгкий)</div><span class="meal-kcal">минимум 1 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Отжимания — восстановительный объём</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 8</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">2 × 8</span></div><div class="portion-row"><span class="portion-name">Стойка</span><span class="portion-amount">ближе к опоре</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Встань <strong>ближе к опоре</strong>, чем во вторник — угол круче, нагрузка меньше. Сегодня качество движения, не усилие.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Медленно вниз, медленно вверх, огромный запас. Планка от пяток до головы всё время.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Плечи или запястья ноют — <strong>сделай от стены</strong> или пропусти совсем. Оба варианта нормальные.</div></div><div class="recipe-note">Виса сегодня нет — ладони и хват отдыхают перед пятничной связкой «прогулка → вис».</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Шаги — лёгкий день их не касается</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Темп</span><span class="portion-amount">обычный, разговорный</span></div><div class="recipe-divider"></div><div class="recipe-label">Почему шаги остаются</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Лёгкий день разгружает <strong>хват и плечи</strong>, а не ноги: спокойная ходьба — это восстановление, а не нагрузка.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Темп — такой, при котором можешь говорить полными фразами. Задыхаться не надо, это не кардио-тест.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Заодно прогулка — готовый повод для завтрашней связки: вернулся — повис.</div></div><div class="recipe-note">Стопы или колени за неделю дали о себе знать — сократи отрезки, но не обнуляй день: три коротких выхода мягче одного длинного.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка</div><div class="meal-title">Холодный финиш C0</div><span class="meal-kcal">10 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Холодный финиш — C0</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 сек</span></div><div class="portion-row"><span class="portion-name">Когда</span><span class="portion-amount">любой душ за день</span></div><div class="portion-row"><span class="portion-name">Голова</span><span class="portion-amount">не мочить</span></div><div class="recipe-divider"></div><div class="recipe-label">Как заходить</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Конец душа → холодная. Кисти/стопы → руки/ноги → спина. Длинный <em>выдох</em>.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">10 сек — полотенце — плюсик.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Отследи первые секунды: каждый следующий финиш мягче предыдущего — это <em>гашение рефлекса</em>, оно чувствуется на ощупь.</div></div><div class="recipe-note">Лёгкий день разгружает силовое, но не холод: <strong>холод — не тренировка</strong>, его можно каждый день.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ПЯТНИЦА 14 -->
+    <div class="day-col" data-date="2026-08-14">
+      <div class="day-label">Пятница, 14 августа<span class="day-sub">прогулка + вис</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Йога<span class="own-tag">твоё</span></div><div class="meal-title">Йога 10 минут + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Йога — как получится</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 мин</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Как обычно + запястья и плечи 40 сек в конце.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Пятница у тебя стабильно живой день — не порть её ожиданиями, просто расстели коврик, если захочется.</div></div><div class="recipe-note">Никакого «пока не сделаешь силовой». Йога закончилась — коврик сворачивается.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Когда угодно · Подтягивания<span class="min-tag">минимум</span></div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">минимум 1 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — сразу после прогулки</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Лучший момент</span><span class="portion-amount">вернулся домой</span></div><div class="recipe-divider"></div><div class="recipe-label">Новая связка</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Пятница — день, когда ты и так гуляешь 10к+. <strong>Вернулся с прогулки → по дороге переодеться повис 20 секунд.</strong> Тело уже разогрето ходьбой, руки свободны, турник по маршруту.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Плечи от ушей вниз, дыхание ровное, слезай до срыва хвата.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Момент упущен — ничего: любой другой проход мимо турника до конца дня тоже годится.</div></div><div class="recipe-note">Расписание у тебя не работает, а привязка к событию — работает (душ → холод). Прогулка — второе такое событие: она уже случается сама.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Шаги — твой проверенный день</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Факт прошлой недели</span><span class="portion-amount">10 000+ ✓</span></div><div class="recipe-divider"></div><div class="recipe-label">Задача</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Просто повтори прошлую пятницу.</strong> Ты это уже делал без всякого плана — теперь оно ещё и засчитывается.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Вернулся домой — <em>повис 20 секунд</em>, пока не сел. Это вся силовая программа на сегодня.</div></div><div class="recipe-note">Пт-вс с 10к+ — это фундамент недели. Задача-минимум — не потерять именно их.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка</div><div class="meal-title">Холодный финиш C0</div><span class="meal-kcal">10 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Холодный финиш — C0</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 сек</span></div><div class="portion-row"><span class="portion-name">Когда</span><span class="portion-amount">любой душ за день</span></div><div class="portion-row"><span class="portion-name">Голова</span><span class="portion-amount">не мочить</span></div><div class="recipe-divider"></div><div class="recipe-label">Как заходить</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Душ после прогулки — идеальный момент: тело тёплое, холод переносится <strong>легче</strong>.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Кисти/стопы → руки/ноги → спина, длинный <em>выдох</em>, 10 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Полотенце, растёрся, оделся — плюсик.</div></div><div class="recipe-note">Пятница дважды была твоим днём закалки (недели 9 и раньше). Держи серию.</div></div>
+      </div></div>
+    </div>
+
+    <!-- СУББОТА 15 -->
+    <div class="day-col" data-date="2026-08-15">
+      <div class="day-label">Суббота, 15 августа<span class="day-sub">4 карточки · P1 дома</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Йога<span class="own-tag">твоё</span></div><div class="meal-title">Йога 10 минут + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Йога — привязка к событию, не к часам</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 мин</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Выходные ломают ритуал не ленью, а <strong>сбитым временем</strong>: будильника нет, утро расползается.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Приём: коврик <strong>сразу после первого кофе или завтрака</strong>, во сколько бы он ни случился.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Запястья и плечи 40 сек в конце — сегодня снова P1.</div></div><div class="recipe-note">Суббота уже открывала тебе P1 (3×12 от стены 1 августа). Хороший день для отжиманий.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>Когда угодно · Отжимания<span class="min-tag">минимум</span></div><div class="meal-title">Отжимания от опоры (P1)</div><span class="meal-kcal">минимум 1 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">P1 — второй заход недели</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 8</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 8</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="portion-row"><span class="portion-name">Опора</span><span class="portion-amount">та же, что во вторник</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Та же опора, та же стойка. <strong>Расстояние ног не увеличиваем</strong> — пока уровень новый, меняется только количество дней, когда он случился.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Планка, локти ~45°, грудь к краю, обратно до прямых рук. Полный диапазон важнее числа повторов.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Восемь идут <em>совсем</em> легко и чисто — можно 10. Выше не идём, запас 3-4 повтора всегда.</div></div><div class="recipe-note">Суббота — день дома: опора рядом, спешки нет. После прогулки тоже отлично заходит — тело уже тёплое.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Шаги — второй опорный день</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Факт прошлой недели</span><span class="portion-amount">10 000+ ✓</span></div><div class="recipe-divider"></div><div class="recipe-label">Задача</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Как вчера: <strong>повтори то, что уже делал сам</strong>. Маршрут, время и компания — любые.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Если к вечеру не хватает пары тысяч — кружок вокруг квартала после ужина закрывает вопрос за 20 минут.</div></div><div class="recipe-note">Заодно: сделал что-то ещё — велосипед, бассейн, работа во дворе? Запиши через «+ активность», я это учту.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка</div><div class="meal-title">Холодный финиш C0</div><span class="meal-kcal">10 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Холодный финиш — C0</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 сек</span></div><div class="portion-row"><span class="portion-name">Когда</span><span class="portion-amount">любой душ за день</span></div><div class="portion-row"><span class="portion-name">Голова</span><span class="portion-amount">не мочить</span></div><div class="recipe-divider"></div><div class="recipe-label">Как заходить</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Конец душа → холодная: кисти/стопы → руки/ноги → спина. Длинный <em>выдох</em>, плечи вниз.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">10 сек — полотенце — плюсик.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Завтра спрошу одним словом: 10 секунд — <strong>легко, терпимо или тяжело?</strong> Секундомер не нужен.</div></div><div class="recipe-note">Суббота-воскресенье раньше были дырой в счётчике — на неделе 9 ты закрыл воскресенье. Держим.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ВОСКРЕСЕНЬЕ 16 — ЛЁГКИЙ -->
+    <div class="day-col light" data-date="2026-08-16">
+      <div class="day-label">Воскресенье, 16 августа<span class="day-sub">лёгкий · итоги</span></div>
+      <div class="light-banner"><strong>Лёгкий день — закрываем неделю.</strong> Вечером напиши итоги по пунктам: ① в скольких днях был <em>хотя бы один</em> силовой подход (цель 3) · ② в скольких днях вышло 10 000+ шагов — устояли ли пт-вс, был ли будний день · ③ сколько ❄️ плюсиков (цель 3-4) и 10 секунд словом: легко / терпимо / тяжело · ④ вис: случился ли вообще и помогла ли связка «вернулся с прогулки — повис» · ⑤ кнопка «+ активность»: пользовался? удобно?</div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Йога<span class="own-tag">твоё</span></div><div class="meal-title">Йога 10 минут + мобилити дольше</div><span class="meal-kcal">10 мин + 2 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Йога + мобилити — закрываем неделю</div><div class="portion-row"><span class="portion-name">Йога</span><span class="portion-amount">10 мин</span></div><div class="portion-row"><span class="portion-name">Мобилити после</span><span class="portion-amount">2 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Что добавить в конце</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья:</strong> растяжка по 30 сек в каждую сторону.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения, дверной проём, «доставание лопаток» — 30 сек.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Грудной отдел:</strong> раскрытие + кошка-корова 1 мин.</div></div><div class="recipe-note">Отследи, не тянет ли где-то в плече, запястье, колене или стопе после недели с шагами. Тянет — скажи мне, разберём.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>Когда угодно · Подтягивания<span class="min-tag">минимум</span></div><div class="meal-title">Вис (лёгкий)</div><span class="meal-kcal">минимум 1 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вис — мягкое закрытие</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">2 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Спокойно, плечи вниз, без надрыва. Один подход — и неделя закрыта. Вернулся с прогулки — лучший момент.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Идёт совсем легко — <em>последние 5 секунд</em> попробуй активным висом: не сгибая локти, опусти плечи и сведи лопатки вниз-назад. Не пошло — не задача.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">📏 Ответь себе честно: 20 секунд — <strong>всё ещё тяжело или уже ровно</strong>? Этот ответ решает, растим ли секунды дальше.</div></div><div class="recipe-note">Устал за неделю — пропускай. Йога, шаги и холодный финиш сегодня важнее.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Шаги — замыкаем тройку пт-вс</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Факт прошлой недели</span><span class="portion-amount">10 000+ ✓</span></div><div class="recipe-divider"></div><div class="recipe-label">Задача</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Третий опорный день — <strong>закрой тройку пт-сб-вс</strong>, как на прошлой неделе.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Вечером посчитай: в скольких днях недели вышло 10 000+? Эта цифра пойдёт в итоги — п. ②.</div></div><div class="recipe-note">Три дня по 10к+ каждую неделю — это уже ~1500-2000 ккал недельного дефицита из одного только движения.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка</div><div class="meal-title">Холодный финиш C0 + итоги</div><span class="meal-kcal">10 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Холодный финиш — C0 + итоги недели</div><div class="portion-row"><span class="portion-name">Длительность</span><span class="portion-amount">10 сек</span></div><div class="portion-row"><span class="portion-name">Когда</span><span class="portion-amount">любой душ за день</span></div><div class="portion-row"><span class="portion-name">Голова</span><span class="portion-amount">не мочить</span></div><div class="recipe-divider"></div><div class="recipe-label">Как заходить</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Конец душа → холодная. Кисти/стопы → руки/ноги → спина. Длинный <em>выдох</em>.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">10 сек — полотенце — последний плюсик недели.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">📏 Посчитай плюсики «❄️ август» (цель 3-4) и ответь словом: <strong>10 секунд — легко, терпимо, тяжело?</strong></div></div><div class="recipe-note">📏 И пять пунктов итогов: дни с силовым · дни с 10к шагов · ❄️ плюсики и слово · вис и связка с прогулкой · «+ активность».</div></div>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<section class="section" id="progress">
+  <div class="info-card">
+    <h2>Фокус недели 11 — не потерять контакт</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Неделя 10 дала одну отметку: вторник, P1, 2×8, «норм». Договор был прямой: не возьмём 4 дня — <strong style="color:var(--accent)">упрощаем дальше, а не наращиваем</strong>. Выполняю. Но неделя 10 дала и вторую вещь — пятница-воскресенье со стабильными 10 000+ шагов. Ты двигался; двигался мимо плана. Значит, план должен научиться видеть твоё движение.</p>
+    <div class="recipe-label">Что меняется</div>
+    <div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Цель силового: 3 дня из 7</strong> (было 4). Один подход в день — вис 1×20 или отжимания 1×8. У холода снижение планки сработало с первого раза — повторяю тот же ход для силового ещё раз.</div></div>
+    <div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Шаги — карточка в каждом дне.</strong> Ты попросил — и это правильная просьба: единственная активность, которая сейчас происходит стабильно, должна быть в системе, а не за бортом.</div></div>
+    <div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Трекер пишет любые активности.</strong> Кнопка «+ активность» в каждом дне: велосипед, бассейн, что угодно — записал, оно уехало в git, я разберу при генерации следующей недели.</div></div>
+    <div class="recipe-step"><div class="recipe-num">4</div><div class="recipe-text"><strong>Вис цепляется к прогулке.</strong> Расписание не работает, привязка к событию работает (душ → холод — твоя единственная взятая цель). Прогулка — второе такое событие: <em>вернулся — повис 20 секунд</em>.</div></div>
+    <div class="recipe-note">Метрика недели одна: <strong>хотя бы один силовой подход в 3 днях из 7</strong>. Возьмём — на следующей неделе цель 4, потом возврат объёмов. Не возьмём — оставим один-единственный якорь (прогулка → вис) и будем строить только от него.</div>
+  </div>
+
+  <div class="info-card">
+    <h2>🚶 Шаги — почему они теперь в плане</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">10 000 шагов — это примерно 7-8 км. При весе ~130 кг такая дистанция стоит порядка <strong style="color:#6cc08b">500-700 ккал за день</strong> — больше, чем любая тренировка из этого плана, и с почти нулевой ударной нагрузкой на суставы, если обувь мягкая. Прямо сейчас ходьба — твой главный инструмент снижения веса.</p>
+    <div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Шаги и подтягивания — один проект.</strong> Каждый сброшенный килограмм — это меньше веса на турнике и на опоре: вис держать легче, отжиматься легче. Ходьба буквально приближает первое подтягивание.</div></div>
+    <div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Задача-минимум — удержать пт-вс.</strong> Эти три дня у тебя уже есть, они появились сами. Задача-максимум — добавить любой будний день. Отдельной цели «7 из 7» нет и не будет: мы помним цену недостижимых целей.</div></div>
+    <div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Не «награждай» шаги едой.</strong> Прогулка 10к и лишняя булочка взаимно уничтожаются: 500 ккал сжёг — 500 съел. Шаги работают на вес только вместе с обычным питанием по health_food.</div></div>
+    <div class="recipe-step"><div class="recipe-num">4</div><div class="recipe-text"><strong>Обувь важнее темпа.</strong> Мягкая амортизирующая подошва — обязательна при твоём весе. Темп — разговорный: можешь говорить полными фразами на ходу — значит, правильный.</div></div>
+    <div class="recipe-note">🛟 Заболели колени, стопы или голени — не геройствуй: разбей день на короткие отрезки, а если боль повторяется — скажи мне, пересмотрим цель. Боль — сигнал, а не норма.</div>
+  </div>
+
+  <div class="info-card">
+    <h2>➕ Свои активности — как это работает</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">До сих пор трекер видел только то, что назначил я. Теперь он видит всё, что делаешь ты: план — карточками, факт — отметками, а <strong style="color:var(--accent-mob)">всё внеплановое — кнопкой «+ активность»</strong>.</p>
+    <div class="recipe-label">Пошагово</div>
+    <div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Листаешь к нужному дню (прошедшие — внизу страницы, под чертой «Прошедшие дни») и жмёшь <strong>«+ активность»</strong> в конце колонки.</div></div>
+    <div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">В шторке: тапни готовый вариант — 🚶 прогулка, 🚴 велосипед, 🏊 плавание, 🤸 зарядка, 🧘 растяжка, 🧹 дела по дому — или впиши своё в поле «Что делал».</div></div>
+    <div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">По желанию — «сколько»: <em>40 мин</em>, <em>5 км</em>, <em>12 500 шагов</em>. Жми «Добавить» — карточка появляется в дне сразу с галочкой.</div></div>
+    <div class="recipe-step"><div class="recipe-num">4</div><div class="recipe-text">Поправить или стереть: тап по карточке → «Как вышло» / «Заметка» / кнопка <strong>«Удалить»</strong>.</div></div>
+    <div class="recipe-step"><div class="recipe-num">5</div><div class="recipe-text">Всё это синхронизируется в git тем же механизмом, что и отметки. В воскресенье я вижу полную картину недели: план, факт и всё, что ты добавил сам, — и следующая неделя строится уже от неё.</div></div>
+    <div class="recipe-note">Счётчики в шапке: «Попал» — дни с силовым/йогой, «❄️» — финиши, «🚶 10к» — дни с шагами, «✚ своё» — твои добавленные записи.</div>
+  </div>
+
+  <div class="info-card">
+    <h2>Где ты сейчас</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Уровни не меняются — неделя держит контакт, а не гонит прогрессию</p>
+    <div class="portion-row"><span class="portion-name">Отжимания (PUSH)</span><span class="portion-amount" style="color:var(--accent-push)">P1 · от опоры (мин 1×8) — подтверждён: 2×8 «норм»</span></div>
+    <div class="portion-row"><span class="portion-name">Вис (PULL)</span><span class="portion-amount">H0 · рабочий 20 сек (пик 36) — 0 отметок за 2 недели</span></div>
+    <div class="portion-row"><span class="portion-name">Шаги</span><span class="portion-amount" style="color:#6cc08b">🚶 10к стабильно в пт-вс — берём в план</span></div>
+    <div class="portion-row"><span class="portion-name">Закалка (COLD)</span><span class="portion-amount" style="color:#5ec8d8">C0 · финиш 10 сек (любой душ)</span></div>
+    <div class="portion-row"><span class="portion-name">Мобилити</span><span class="portion-amount" style="color:var(--accent-mob)">🧘 йога 10 мин — твоя, без долга</span></div>
+    <div class="recipe-divider"></div>
+    <div class="recipe-label">Ближайшие шаги</div>
+    <div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Эта неделя:</strong> силовой подход в 3 днях, пт-вс с 10к шагов удержаны, 3-4 холодных финиша. Всё.</div></div>
+    <div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Дальше (сила):</strong> 3 дня стабильно → 4-5 дней → возврат объёма 3×20 виса и 3×8 P1 → лесенка виса 20→25→30. Уверенные <strong>3×30</strong> закроют milestone HANG и откроют scapular pulls — первый настоящий шаг к подтягиванию.</div></div>
+    <div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Дальше (холод):</strong> 5-7 спокойных финишей подряд → C1 (30-60 сек). Спешки нет: вода в кране начнёт остывать к октябрю, и лестница сама станет интереснее.</div></div>
+    <div class="recipe-step"><div class="recipe-num">4</div><div class="recipe-text"><strong>Дальше (шаги):</strong> пт-вс держатся 2-3 недели подряд → попробуем закрепить один будний день, скорее всего среду — она и по силовому самая пустая, пусть шаги её вытягивают.</div></div>
+    <div class="recipe-note">📏 В воскресенье жду 5 пунктов: дни с силовым · дни с 10к · ❄️ плюсики и слово · вис и связка с прогулкой · «+ активность» — удобно или нет.</div>
+  </div>
+</section>
+
+<section class="section" id="tech">
+  <div class="info-card">
+    <h2>Техника недели</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Движения прежние — вис H0, отжимания P1, холодный финиш C0. Новое — <strong style="color:#6cc08b">шаги как пункт плана</strong> и правило трёх дней. Принципы не меняются: вне отказа, чисто, с запасом. Любая боль (не усталость мышц) — стоп и скажи мне.</p>
+
+    <!-- ПРАВИЛО ТРЁХ ДНЕЙ -->
+    <div class="cook-block">
+      <h3>Правило недели: три дня из семи</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="240" height="86" viewBox="0 0 240 86" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="24" cy="34" r="13" fill="#4f9dd9"/>
+            <text x="24" y="39" fill="#0e1217" font-size="12" font-weight="600" text-anchor="middle" font-family="DM Sans">1</text>
+            <circle cx="56" cy="34" r="13" stroke="#51606e" stroke-width="2" stroke-dasharray="4 4"/>
+            <circle cx="88" cy="34" r="13" fill="#4f9dd9"/>
+            <text x="88" y="39" fill="#0e1217" font-size="12" font-weight="600" text-anchor="middle" font-family="DM Sans">2</text>
+            <circle cx="120" cy="34" r="13" stroke="#51606e" stroke-width="2" stroke-dasharray="4 4"/>
+            <circle cx="152" cy="34" r="13" stroke="#51606e" stroke-width="2" stroke-dasharray="4 4"/>
+            <circle cx="184" cy="34" r="13" fill="#4f9dd9"/>
+            <text x="184" y="39" fill="#0e1217" font-size="12" font-weight="600" text-anchor="middle" font-family="DM Sans">3</text>
+            <circle cx="216" cy="34" r="13" stroke="#51606e" stroke-width="2" stroke-dasharray="4 4"/>
+            <text x="120" y="70" fill="#4f9dd9" font-size="9.5" text-anchor="middle" font-family="DM Sans">три любых дня с одним подходом — неделя взята</text>
+          </svg>
+          <span class="cap">Какие именно дни — не важно</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text"><strong>Один подход = день засчитан.</strong> Вис 1×20 сек или отжимания 1×8 — что угодно из двух. Плюсик ставь сразу, не жди «полного» дня: три подхода — бонус, а не норма.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text"><strong>Почему три, а не четыре.</strong> Четыре не взялись. У закалки точно такой же ход — снизить планку до реально достижимой — сработал с первой попытки и дал первую взятую цель проекта. Повторяем приём, а не спорим с ним.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>В GtG частота важнее объёма:</strong> три дня по одному подходу полезнее одного дня с тремя. Нервная система учится движению от повторяемости, а не от усталости.</div></div>
+      <div class="tip-box">Не выбирай дни заранее. Правило простое: появилась возможность — используй сегодня, не откладывая на «удобный» день. Три зелёных дня в начале недели лучше плана на выходные.</div>
+    </div>
+
+    <!-- ХОДЬБА -->
+    <div class="cook-block">
+      <h3>🚶 Ходьба — 10 000 шагов без подвига</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="120" height="140" viewBox="0 0 120 140" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="8" y1="126" x2="112" y2="126" stroke="#2c3a48" stroke-width="2.4"/>
+            <circle cx="58" cy="34" r="8" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="58" y1="42" x2="56" y2="86" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="56" y1="86" x2="40" y2="124" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="56" y1="86" x2="74" y2="122" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="57" y1="56" x2="42" y2="82" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="57" y1="56" x2="72" y2="80" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="58" y1="20" x2="70" y2="20" stroke="#6cc08b" stroke-width="2.2"/>
+            <polyline points="65,15 71,20 65,25" stroke="#6cc08b" stroke-width="2.2"/>
+          </svg>
+          <span class="cap">Взгляд вперёд, плечи расслаблены, шаг обычный</span>
+        </div>
+        <div class="ex-phase">
+          <svg width="190" height="140" viewBox="0 0 190 140" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="12" y="52" width="46" height="16" rx="8" fill="#6cc08b"/>
+            <rect x="72" y="52" width="46" height="16" rx="8" fill="#6cc08b" opacity="0.75"/>
+            <rect x="132" y="52" width="46" height="16" rx="8" fill="#6cc08b" opacity="0.5"/>
+            <text x="35" y="46" fill="#6cc08b" font-size="9" text-anchor="middle" font-family="DM Sans">утро</text>
+            <text x="95" y="46" fill="#6cc08b" font-size="9" text-anchor="middle" font-family="DM Sans">день</text>
+            <text x="155" y="46" fill="#6cc08b" font-size="9" text-anchor="middle" font-family="DM Sans">вечер</text>
+            <text x="95" y="92" fill="#8b9bab" font-size="9.5" text-anchor="middle" font-family="DM Sans">3 × 25-40 минут ≈ 10 000 шагов</text>
+            <text x="95" y="110" fill="#51606e" font-size="8.5" text-anchor="middle" font-family="DM Sans">одним куском не обязательно</text>
+          </svg>
+          <span class="cap">Дневную цель можно резать на части</span>
+        </div>
+      </div>
+      <div class="ex-sub">Сколько это</div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text">10 000 шагов ≈ <strong>7-8 км ≈ 1.5-2 часа</strong> суммарной ходьбы за день, включая всю бытовую. Реальный «добор» сверх обычного дня — обычно 40-60 минут.</div></div>
+      <div class="ex-sub">Как идти</div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text">Темп <strong>разговорный</strong>: можешь говорить полными фразами. Взгляд вперёд (не в телефон под ногами), плечи расслаблены, руки свободно. Никакой спортивной ходьбы не нужно.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>Обувь с мягкой подошвой</strong> — единственное настоящее требование при 130 кг. Жёсткие ботинки и сандалии на плоской подошве на 10к дистанции отзовутся в коленях и пятках.</div></div>
+      <div class="ex-sub">Как добирать</div>
+      <div class="cook-step"><div class="step-num">4</div><div class="step-text">Резать на куски: 2-3 выхода по 25-40 минут. Остановка раньше, парковка дальше, звонки на ногах, вечерний кружок вокруг квартала. Лестница вместо лифта — тоже шаги.</div></div>
+      <div class="cook-step"><div class="step-num">5</div><div class="step-text">Проверяй счётчик <strong>в середине дня</strong>: в 15:00 ещё можно догулять 4 тысячи, в 23:00 — уже нет. Телефон держи в кармане, иначе шаги не считаются.</div></div>
+      <div class="warn-box">При твоём весе ходьба — самая безопасная нагрузка из существующих, но у неё есть один враг: резкий рост объёма. Ты уже ходишь 10к в пт-вс — значит, база есть. Если стопа, голень или колено начали ныть — сократи отрезки и скажи мне; «расхаживать» боль не надо.</div>
+    </div>
+
+    <!-- ВИС -->
+    <div class="cook-block">
+      <h3>Вис на перекладине (H0) — минимум 1×20 сек, якорь — прогулка</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="86" height="150" viewBox="0 0 86 150" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="18" x2="80" y2="18" stroke="#4f9dd9" stroke-width="3"/>
+            <circle cx="32" cy="18" r="2.6" fill="#8b9bab"/>
+            <circle cx="54" cy="18" r="2.6" fill="#8b9bab"/>
+            <line x1="32" y1="18" x2="38" y2="45" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="54" y1="18" x2="48" y2="45" stroke="#8b9bab" stroke-width="2.5"/>
+            <circle cx="43" cy="40" r="7" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="47" x2="43" y2="99" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="99" x2="38" y2="136" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="99" x2="48" y2="136" stroke="#8b9bab" stroke-width="2.5"/>
+          </svg>
+          <span class="cap">Прямые руки, плечи от ушей, тело спокойно висит</span>
+        </div>
+        <div class="ex-phase">
+          <svg width="100" height="150" viewBox="0 0 100 150" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="18" x2="80" y2="18" stroke="#4f9dd9" stroke-width="3"/>
+            <circle cx="32" cy="18" r="2.6" fill="#8b9bab"/>
+            <circle cx="54" cy="18" r="2.6" fill="#8b9bab"/>
+            <line x1="32" y1="18" x2="38" y2="45" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="54" y1="18" x2="48" y2="45" stroke="#8b9bab" stroke-width="2.5"/>
+            <circle cx="43" cy="40" r="7" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="47" x2="43" y2="104" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="104" x2="36" y2="128" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="104" x2="50" y2="128" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="18" y1="130" x2="70" y2="130" stroke="#a07fc4" stroke-width="2.6"/>
+            <circle cx="36" cy="128" r="2.4" fill="#a07fc4"/>
+            <circle cx="50" cy="128" r="2.4" fill="#a07fc4"/>
+            <text x="44" y="146" fill="#a07fc4" font-size="9" text-anchor="middle" font-family="DM Sans">носки на опоре</text>
+          </svg>
+          <span class="cap">Хват не тянет — часть веса на ноги</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text">Хват сверху на ширине плеч, большой палец обхватывает перекладину. Повисни на <strong>прямых руках</strong>, плечи мягко опусти от ушей, дыши ровно. Отсчитал 20 — слезай, даже если можешь больше.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text"><strong>Секунды не растим</strong> — 25 и 30 вернутся, когда вис начнёт случаться в 3-4 днях недели. Сейчас растим только количество дней, в которых он был.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>Якорь недели: вернулся с прогулки — повис.</strong> Заходишь домой разогретый, руки свободны, турник по дороге. 20 секунд до того, как сел, — и день зелёный.</div></div>
+      <div class="tip-box">Слезай <strong>до</strong> срыва хвата: сорванная мозоль отнимет неделю виса. Хват не дотягивает 20 — носки на пол или табурет; время под нагрузкой важнее чистоты подвеса.</div>
+    </div>
+
+    <!-- ОТЖИМАНИЯ P1 -->
+    <div class="cook-block">
+      <h3>💪 Отжимания от опоры (P1) — минимум 1×8</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="84" y1="48" x2="150" y2="48" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="140" y1="48" x2="140" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="20" y1="102" x2="92" y2="62" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="101" cy="57" r="6.5" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="92" y1="62" x2="96" y2="50" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="20" cy="102" r="2.6" fill="#8b9bab"/>
+            <circle cx="96" cy="50" r="2.4" fill="#8b9bab"/>
+          </svg>
+          <span class="cap">Старт: руки прямые, тело — планка</span>
+        </div>
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="84" y1="48" x2="150" y2="48" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="140" y1="48" x2="140" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="20" y1="102" x2="100" y2="68" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="109" cy="63" r="6.5" stroke="#8b9bab" stroke-width="2.6"/>
+            <polyline points="100,68 111,59 96,50" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="20" cy="102" r="2.6" fill="#8b9bab"/>
+            <circle cx="96" cy="50" r="2.4" fill="#8b9bab"/>
+            <line x1="58" y1="34" x2="80" y2="46" stroke="#e0a04e" stroke-width="2.4"/>
+            <polyline points="71.1,45.7 80,46 74.9,38.7" stroke="#e0a04e" stroke-width="2.4"/>
+          </svg>
+          <span class="cap">Низ: локти ~45°, грудь к краю опоры</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text"><strong>Опора капитальная:</strong> подоконник, встроенная столешница, тяжёлый стол у стены. Проверка: навались всем весом и покачай — играет или едет, ищи другую. Ладони и край сухие.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text">Ладони на край на ширине плеч, тело — <strong>прямая планка</strong> от пяток до головы. Локти ~45° к корпусу, грудь к краю на вдохе, до прямых рук на выдохе. 2 секунды вниз, без рывка вверх.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>Регулировка — ногами:</strong> ближе к опоре легче, дальше тяжелее. Стойку прошлой недели не меняем. Не идёт — доделай от стены: это регулировка, а не откат.</div></div>
+      <div class="warn-box">При ~130 кг на край опоры давит порядка 60-70 кг — отдельно стоящий лёгкий стол может опрокинуться. Ошибки движения: провал поясницы, локти в стороны, неполный диапазон. Боль в плече или запястье — стоп на сегодня и скажи мне.</div>
+    </div>
+
+    <!-- ХОЛОДНЫЙ ФИНИШ -->
+    <div class="cook-block">
+      <h3>❄️ Холодный финиш — ступень C0 (10 сек, любой душ)</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="120" height="140" viewBox="0 0 120 140" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="60" y1="8" x2="60" y2="22" stroke="#5ec8d8" stroke-width="3"/>
+            <path d="M38 22 H82 L74 33 H46 Z" stroke="#5ec8d8" stroke-width="2.4"/>
+            <line x1="50" y1="40" x2="46" y2="60" stroke="#5ec8d8" stroke-width="2.2" stroke-dasharray="3 5"/>
+            <line x1="60" y1="40" x2="60" y2="62" stroke="#5ec8d8" stroke-width="2.2" stroke-dasharray="3 5"/>
+            <line x1="70" y1="40" x2="74" y2="60" stroke="#5ec8d8" stroke-width="2.2" stroke-dasharray="3 5"/>
+            <circle cx="60" cy="82" r="8" stroke="#8b9bab" stroke-width="2.4"/>
+            <line x1="60" y1="90" x2="60" y2="116" stroke="#8b9bab" stroke-width="2.4"/>
+            <line x1="60" y1="98" x2="50" y2="110" stroke="#8b9bab" stroke-width="2.4"/>
+            <line x1="60" y1="98" x2="70" y2="110" stroke="#8b9bab" stroke-width="2.4"/>
+            <path d="M76 80 q10 4 0 8" stroke="#e0a04e" stroke-width="2.2"/>
+            <text x="92" y="86" fill="#e0a04e" font-size="8.5" text-anchor="start" font-family="DM Sans">выдох</text>
+          </svg>
+          <span class="cap">Конечности под струёй, длинный выдох, голову не мочить</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text">Решение «иду» — <strong>до воды</strong>. Помылся → переключил на холодную → <strong>конечности первыми</strong>: кисти и стопы → руки и ноги → спина. Грудь и голову на C0 не трогаем.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text">Все 10 секунд — длинный медленный <strong>выдох</strong>: вдох носом 2-3 сек, выдох ртом 4-6 сек. Плечи вниз, чуть переминайся. Вышел — полотенце, растёрся, плюсик в «❄️ август».</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text">Тяжёлый день — <strong>только кисти и стопы</strong>, плюсик полный. Цель недели 3-4 финиша, и специально не больше.</div></div>
+      <div class="warn-box">Красные линии: голову не мочить; никакой гипервентиляции и задержек дыхания у воды; выходить ДО сильной дрожи; любое недомогание — полный стоп и холода, и силового.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Pull-to-refresh -->
+<div id="ptr" aria-hidden="true">
+  <svg viewBox="0 0 44 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect id="ptr-bar" x="6" y="40" width="32" height="5" rx="2.5" fill="#4f9dd9"/>
+    <circle id="ptr-head" cx="22" cy="56" r="6" fill="#e0a04e" opacity="0"/>
+  </svg>
+</div>
+
+<div id="card-modal" onclick="if(event.target===this)closeModal()">
+  <div id="card-modal-inner"></div>
+</div>
+
+<script>
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+  function openCard(el) {
+    const back = el.querySelector('.card-back').innerHTML;
+    document.getElementById('card-modal-inner').innerHTML =
+      '<button class="modal-close" onclick="closeModal()">✕</button>' + back;
+    document.getElementById('card-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    document.getElementById('card-modal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  (function organizeDays() {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const grid = document.querySelector('.days-grid');
+    const cols = Array.from(grid.querySelectorAll('.day-col'));
+    const past = [], present = [], future = [];
+    cols.forEach(col => {
+      const d = col.dataset.date;
+      if (!d) { future.push(col); return; }
+      if (d < todayStr) past.push(col);
+      else if (d === todayStr) present.push(col);
+      else future.push(col);
+    });
+    present.forEach(col => {
+      col.classList.add('today');
+      const label = col.querySelector('.day-label');
+      if (label) label.insertAdjacentHTML('beforeend', '<span class="today-badge">Сегодня</span>');
+    });
+    past.forEach(col => col.classList.add('past'));
+    cols.forEach(c => c.remove());
+    [...present, ...future].forEach(c => grid.appendChild(c));
+    if (past.length > 0) {
+      const sep = document.createElement('div');
+      sep.className = 'past-header';
+      sep.textContent = 'Прошедшие дни';
+      grid.appendChild(sep);
+      past.forEach(c => grid.appendChild(c));
+    }
+  })();
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/push_pull-ups/sw.js', { scope: '/push_pull-ups/' });
+  }
+  (function () {
+    const ptr = document.getElementById('ptr');
+    if (!ptr) return;
+    const head = document.getElementById('ptr-head');
+    const THRESHOLD = 82;
+    let startY = 0, delta = 0, active = false;
+    function draw(p) {
+      ptr.style.top = (-76 + p * 90) + 'px';
+      ptr.style.opacity = Math.min(p * 2.5, 1);
+      head.style.opacity = Math.max(0, (p - 0.5) / 0.5);
+    }
+    function retract() {
+      ptr.style.transition = 'top .28s ease, opacity .22s ease';
+      ptr.style.top = '-76px'; ptr.style.opacity = '0';
+      setTimeout(() => { ptr.style.cssText = ''; head.style.opacity = '0'; }, 300);
+    }
+    document.addEventListener('touchstart', e => {
+      if (window.scrollY !== 0) return;
+      startY = e.touches[0].clientY; active = true;
+      ptr.style.cssText = 'transition:none';
+    }, { passive: true });
+    document.addEventListener('touchmove', e => {
+      if (!active) return;
+      delta = Math.max(0, e.touches[0].clientY - startY);
+      draw(Math.min(delta / THRESHOLD, 1));
+    }, { passive: true });
+    document.addEventListener('touchend', () => {
+      if (!active) return; active = false;
+      if (delta > THRESHOLD) { location.reload(); } else { retract(); }
+      delta = 0;
+    });
+  })();
+</script>
+
+<script type="module" src="../../assets/tracker.js"></script>
+</body>
+</html>
