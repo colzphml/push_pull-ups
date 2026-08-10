@@ -25,6 +25,10 @@ test('windowFromMealType нормализует «Душ дня» в «душ» 
   assert.equal(windowFromMealType('Душ · Закалка'), 'душ');
 });
 
+test('windowFromMealType нормализует «За день» в «день» — окно карточки шагов', () => {
+  assert.equal(windowFromMealType('За день · Шаги'), 'день');
+});
+
 test('windowFromMealType сохраняет описательные окна как есть', () => {
   assert.equal(windowFromMealType('Сразу после йоги · Подтягивания'), 'сразу после йоги');
 });
@@ -41,6 +45,7 @@ test('windowFromMealType отбрасывает текст бейджей, пр�
 test('isTrackable отсеивает отдых и неизвестные блоки', () => {
   assert.equal(isTrackable('pull'), true);
   assert.equal(isTrackable('cold'), true);
+  assert.equal(isTrackable('steps'), true);
   assert.equal(isTrackable('rest'), false);
   assert.equal(isTrackable(null), false);
 });

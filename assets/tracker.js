@@ -1,5 +1,5 @@
-// DOM-слой трекера: контролы на карточках, шторка уточнения, шапка, синхронизация.
-import { weekStats, pendingEntries, mergeEntries, sameEntries, entryKey, syncState } from './tracker-core.js';
+// DOM-слой трекера: контролы на карточках, шторки уточнения и добавления, шапка, синхронизация.
+import { weekStats, pendingEntries, mergeEntries, sameEntries, entryKey, syncState, freeCustomTitle } from './tracker-core.js';
 import { blockFromDotClass, windowFromMealType, isTrackable } from './tracker-parse.js';
 import { Store } from './tracker-store.js';
 import { pullWeek, syncWeek, AuthError, describeSyncError } from './tracker-github.js';
@@ -63,6 +63,16 @@ const styles = `
 .tr-actions button{flex:1;padding:11px;border-radius:9px;font-size:13.5px;cursor:pointer;
   border:1px solid var(--border);background:none;color:var(--text-dim)}
 .tr-actions .tr-save{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:600}
+.tr-actions .tr-danger{border-color:#7a4a4a;color:#c98080}
+/* Свои активности: точка и кнопка добавления. Классы dot-* по блокам живут в разметке
+   недели, но custom-карточки создаёт сам трекер — их точку он и красит. */
+.meal-type-dot.dot-custom{background:#d9c96f}
+.tr-custom .card-front{cursor:pointer}
+.tr-add{display:block;width:100%;margin-bottom:10px;padding:10px 12px;background:transparent;
+  border:1.5px dashed var(--border);border-radius:14px;color:var(--text-dim);
+  font:inherit;font-size:12px;letter-spacing:.3px;cursor:pointer;text-align:center;transition:.15s}
+.tr-add:hover{border-color:var(--accent);color:var(--accent)}
+.tr-presets button{flex:1 1 44%}
 `;
 
 function injectStyles() {
@@ -128,7 +138,92 @@ function nextDone(current) {
   return 1;
 }
 
+/* --- свои активности --- */
+
+const PRESETS = ['🚶 Прогулка', '🚴 Велосипед', '🏊 Плавание', '🤸 Зарядка', '🧘 Растяжка', '🧹 Дела по дому'];
+
+/** Описание карточки для своей записи — тот же формат, что отдаёт describeCard. */
+function customCard(entry) {
+  return {
+    date: entry.date,
+    window: entry.window || 'своё',
+    block: 'custom',
+    exercise: entry.exercise,
+    planned: '',
+  };
+}
+
+function addCustom(date, name, amount) {
+  const exercise = freeCustomTitle(entries, date, name);
+  saveEntry(
+    { date, window: 'своё', block: 'custom', exercise, planned: '' },
+    { done: 1, actual: amount }
+  );
+}
+
+function buildMark(entry, card) {
+  const mark = document.createElement('button');
+  mark.type = 'button';
+  mark.className = 'tr-mark';
+  mark.classList.toggle('done', entry?.done === 1);
+  mark.classList.toggle('miss', entry?.done === 0);
+  mark.textContent = entry?.done === 1 ? '✓' : entry?.done === 0 ? '✕' : '';
+  mark.setAttribute('aria-label',
+    entry?.done === 1 ? 'Сделано' : entry?.done === 0 ? 'Не вышло' : 'Отметить выполнение');
+  mark.onclick = event => {
+    event.stopPropagation();
+    const current = findEntry(card);
+    saveEntry(card, { done: nextDone(current ? current.done : null) });
+  };
+  return mark;
+}
+
+/**
+ * Карточки своих активностей строятся из записей лога, а не из разметки недели:
+ * только так они переживают перезагрузку и приходят с другого устройства.
+ */
+function renderCustom() {
+  document.querySelectorAll('.tr-custom').forEach(el => el.remove());
+  for (const entry of entries) {
+    if (entry.block !== 'custom' || entry.deleted) continue;
+    const col = document.querySelector(`.day-col[data-date="${entry.date}"]`);
+    if (!col) continue;
+    const card = customCard(entry);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'flip-wrap tr-custom';
+    const inner = document.createElement('div');
+    inner.className = 'flip-inner';
+    const front = document.createElement('div');
+    front.className = 'card-front';
+    front.dataset.tr = '1';
+
+    const type = document.createElement('div');
+    type.className = 'meal-type';
+    const dot = document.createElement('span');
+    dot.className = 'meal-type-dot dot-custom';
+    type.append(dot, 'Своё · Активность');
+    const title = document.createElement('div');
+    title.className = 'meal-title';
+    title.textContent = entry.exercise;
+    front.append(type, title);
+    if (entry.actual) {
+      const kcal = document.createElement('span');
+      kcal.className = 'meal-kcal';
+      kcal.textContent = entry.actual;
+      front.appendChild(kcal);
+    }
+    front.appendChild(buildMark(entry, card));
+    front.onclick = () => openSheet(card);
+
+    inner.appendChild(front);
+    wrap.appendChild(inner);
+    col.insertBefore(wrap, col.querySelector('.tr-add'));
+  }
+}
+
 function render() {
+  renderCustom();
   document.querySelectorAll('.flip-wrap[data-tr]').forEach(wrap => {
     const card = describeCard(wrap);
     if (!card) return;
@@ -172,6 +267,18 @@ function renderBar() {
   const cold = document.createElement('span');
   cold.textContent = `❄️ финишей: ${stats.coldFinishes}`;
   bar.appendChild(cold);
+
+  // Счётчик шагов — только на неделях, где такой блок вообще есть; «своё» — когда есть записи.
+  if (document.querySelector('.dot-steps') || stats.stepsDays > 0) {
+    const steps = document.createElement('span');
+    steps.textContent = `🚶 10к: ${stats.stepsDays}`;
+    bar.appendChild(steps);
+  }
+  if (stats.ownDone > 0) {
+    const own = document.createElement('span');
+    own.textContent = `✚ своё: ${stats.ownDone}`;
+    bar.appendChild(own);
+  }
 
   const status = document.createElement('span');
   status.className = `tr-status${tone}`;
@@ -369,6 +476,7 @@ function buildSheet() {
       <label for="tr-note">Заметка</label>
       <textarea id="tr-note" rows="2"></textarea>
       <div class="tr-actions">
+        <button type="button" class="tr-danger" id="tr-delete" hidden>Удалить</button>
         <button type="button" id="tr-cancel">Отмена</button>
         <button type="button" class="tr-save" id="tr-save">Сохранить</button>
       </div>
@@ -386,9 +494,18 @@ function closeSheet() {
 function openSheet(card) {
   const entry = findEntry(card) || {};
   document.getElementById('tr-sheet-title').textContent = card.exercise;
-  document.getElementById('tr-sheet-plan').textContent = `План: ${card.planned}`;
+  document.getElementById('tr-sheet-plan').textContent =
+    card.block === 'custom' ? 'Своя активность' : `План: ${card.planned}`;
   document.getElementById('tr-actual').value = entry.actual || card.planned;
   document.getElementById('tr-note').value = entry.note || '';
+  // Удаление есть только у своих записей: плановая карточка — часть недели, её не удаляют.
+  const del = document.getElementById('tr-delete');
+  del.hidden = card.block !== 'custom';
+  del.onclick = () => {
+    if (!window.confirm('Удалить эту запись?')) return;
+    saveEntry(card, { deleted: 1 });
+    closeSheet();
+  };
   const chips = [...document.querySelectorAll('#tr-chips button')];
   chips.forEach(chip => {
     chip.classList.toggle('on', chip.dataset.felt === entry.felt);
@@ -409,6 +526,75 @@ function openSheet(card) {
   document.body.style.overflow = 'hidden';
 }
 
+/* --- шторка добавления активности --- */
+
+let addSheet = null;
+let addDate = '';
+
+function buildAddSheet() {
+  addSheet = document.createElement('div');
+  addSheet.className = 'tr-sheet';
+  addSheet.innerHTML = `
+    <div class="tr-sheet-inner">
+      <h3>Добавить активность</h3>
+      <p class="tr-plan" id="tr-add-day"></p>
+      <label>Быстрый выбор</label>
+      <div class="tr-chips tr-presets" id="tr-add-presets"></div>
+      <label for="tr-add-name">Что делал</label>
+      <input id="tr-add-name" type="text" autocomplete="off" placeholder="Или напиши своими словами">
+      <label for="tr-add-amount">Сколько — по желанию</label>
+      <input id="tr-add-amount" type="text" autocomplete="off" placeholder="40 мин · 5 км · 12 500 шагов">
+      <div class="tr-actions">
+        <button type="button" id="tr-add-cancel">Отмена</button>
+        <button type="button" class="tr-save" id="tr-add-save">Добавить</button>
+      </div>
+    </div>`;
+  const chips = addSheet.querySelector('#tr-add-presets');
+  for (const preset of PRESETS) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.textContent = preset;
+    chip.onclick = () => {
+      addSheet.querySelector('#tr-add-name').value = preset;
+      [...chips.children].forEach(c => c.classList.toggle('on', c === chip));
+    };
+    chips.appendChild(chip);
+  }
+  document.body.appendChild(addSheet);
+  addSheet.addEventListener('click', event => { if (event.target === addSheet) closeAddSheet(); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') closeAddSheet(); });
+  addSheet.querySelector('#tr-add-cancel').onclick = closeAddSheet;
+  addSheet.querySelector('#tr-add-save').onclick = () => {
+    const nameInput = document.getElementById('tr-add-name');
+    const name = nameInput.value.trim();
+    if (!name) { nameInput.focus(); return; }
+    addCustom(addDate, name, document.getElementById('tr-add-amount').value.trim());
+    closeAddSheet();
+  };
+}
+
+/** Заголовок дня из разметки: «Понедельник, 10 августа» читается лучше, чем ISO-дата. */
+function dayTitle(date) {
+  const label = document.querySelector(`.day-col[data-date="${date}"] .day-label`);
+  const text = label && label.childNodes[0] ? label.childNodes[0].textContent.trim() : '';
+  return text || date;
+}
+
+function closeAddSheet() {
+  addSheet.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function openAddSheet(date) {
+  addDate = date;
+  document.getElementById('tr-add-day').textContent = dayTitle(date);
+  document.getElementById('tr-add-name').value = '';
+  document.getElementById('tr-add-amount').value = '';
+  [...addSheet.querySelectorAll('#tr-add-presets button')].forEach(c => c.classList.remove('on'));
+  addSheet.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
 /* --- запуск --- */
 
 function mount() {
@@ -420,6 +606,18 @@ function mount() {
 
   injectStyles();
   buildSheet();
+  buildAddSheet();
+
+  // Кнопка «+ активность» есть в каждом дне, включая прошедшие: вчерашнюю прогулку
+  // тоже надо куда-то записывать. Custom-карточки вставляются перед этой кнопкой.
+  dayCols.forEach(col => {
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'tr-add';
+    add.textContent = '+ активность';
+    add.onclick = () => openAddSheet(col.dataset.date);
+    col.appendChild(add);
+  });
 
   document.querySelectorAll('.day-col[data-date] .flip-wrap').forEach(wrap => {
     const card = describeCard(wrap);

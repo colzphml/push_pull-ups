@@ -4,6 +4,8 @@
 /** Блоки, попадание в которые засчитывается как «день состоялся». */
 const HIT_BLOCKS = new Set(['push', 'pull', 'mob']);
 
+const norm = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+
 /**
  * Ключ записи: дата + окно + блок + упражнение. Окно обязательно: в истории есть дни,
  * где один блок идёт дважды с одинаковым названием и различается только окном
@@ -11,7 +13,6 @@ const HIT_BLOCKS = new Set(['push', 'pull', 'mob']);
  * Тексты нормализуем: они приходят из разметки.
  */
 export function entryKey(entry) {
-  const norm = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
   return `${entry.date}|${norm(entry.window)}|${entry.block}|${norm(entry.exercise)}`;
 }
 
@@ -80,20 +81,45 @@ export function syncState({ hasToken, pendingCount, syncing, error }) {
   return { tone: 'ok', label: 'Всё отправлено', button: null, settings: true };
 }
 
-/** Статистика недели: попадаемость по дням и отдельный счётчик финишей закалки. */
+/** Статистика недели: попадаемость по дням и отдельные счётчики закалки, шагов и своего. */
 export function weekStats(entries, dates) {
   const weekDates = new Set(dates);
   const hitDates = new Set();
+  const stepDates = new Set();
   let coldFinishes = 0;
+  let ownDone = 0;
   for (const entry of entries) {
-    // Обе метрики считаем строго по запрошенной неделе, иначе они разъезжаются.
-    if (entry.done !== 1 || !weekDates.has(entry.date)) continue;
+    // Все метрики считаем строго по запрошенной неделе, иначе они разъезжаются.
+    if (entry.deleted || entry.done !== 1 || !weekDates.has(entry.date)) continue;
     if (entry.block === 'cold') coldFinishes += 1;
+    else if (entry.block === 'steps') stepDates.add(entry.date);
+    else if (entry.block === 'custom') ownDone += 1;
     else if (HIT_BLOCKS.has(entry.block)) hitDates.add(entry.date);
   }
   return {
     hitDays: hitDates.size,
     totalDays: dates.length,
     coldFinishes,
+    stepsDays: stepDates.size,
+    ownDone,
   };
+}
+
+/**
+ * Название для новой своей активности. Ключ записи включает название, поэтому вторая
+ * «Прогулка» за день молча затёрла бы первую — навешиваем счётчик «·2». Tombstone
+ * (deleted) занятым не считается: перезапись удалённой записи — это её восстановление.
+ */
+export function freeCustomTitle(entries, date, name) {
+  const base = String(name || '').trim().replace(/\s+/g, ' ');
+  const taken = new Set(
+    entries
+      .filter(e => e.date === date && e.block === 'custom' && !e.deleted)
+      .map(e => norm(e.exercise))
+  );
+  if (!taken.has(norm(base))) return base;
+  for (let i = 2; ; i += 1) {
+    const candidate = `${base} ·${i}`;
+    if (!taken.has(norm(candidate))) return candidate;
+  }
 }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { entryKey, mergeEntries, pendingEntries, sameEntries, weekStats, syncState } from '../assets/tracker-core.js';
+import { entryKey, mergeEntries, pendingEntries, sameEntries, weekStats, syncState, freeCustomTitle } from '../assets/tracker-core.js';
 
 const base = {
   date: '2026-07-27', window: 'утро', block: 'pull',
@@ -106,7 +106,7 @@ test('weekStats считает финиши закалки отдельным с
 
 test('weekStats на пустом логе возвращает нули', () => {
   const stats = weekStats([], ['2026-07-27']);
-  assert.deepEqual(stats, { hitDays: 0, totalDays: 1, coldFinishes: 0 });
+  assert.deepEqual(stats, { hitDays: 0, totalDays: 1, coldFinishes: 0, stepsDays: 0, ownDone: 0 });
 });
 
 test('weekStats игнорирует записи с датами вне запрошенной недели', () => {
@@ -114,7 +114,65 @@ test('weekStats игнорирует записи с датами вне зап�
     { ...base, date: '2099-01-01', block: 'pull', done: 1 },
     { ...base, date: '2099-01-01', block: 'cold', done: 1 },
   ];
-  assert.deepEqual(weekStats(entries, ['2026-07-27']), { hitDays: 0, totalDays: 1, coldFinishes: 0 });
+  assert.deepEqual(
+    weekStats(entries, ['2026-07-27']),
+    { hitDays: 0, totalDays: 1, coldFinishes: 0, stepsDays: 0, ownDone: 0 }
+  );
+});
+
+test('weekStats считает дни с шагами отдельно и не смешивает их с попаданиями', () => {
+  const entries = [
+    { ...base, date: '2026-07-27', block: 'steps', exercise: '10 000 шагов', done: 1 },
+    { ...base, date: '2026-07-28', block: 'steps', exercise: '10 000 шагов', done: 1 },
+    { ...base, date: '2026-07-29', block: 'steps', exercise: '10 000 шагов', done: 0 },
+  ];
+  const stats = weekStats(entries, ['2026-07-27', '2026-07-28', '2026-07-29']);
+  assert.equal(stats.stepsDays, 2);
+  assert.equal(stats.hitDays, 0);
+});
+
+test('weekStats считает свои активности по записям, а не по дням', () => {
+  const entries = [
+    { ...base, date: '2026-07-27', block: 'custom', exercise: 'прогулка', done: 1 },
+    { ...base, date: '2026-07-27', block: 'custom', exercise: 'велосипед', done: 1 },
+  ];
+  const stats = weekStats(entries, ['2026-07-27']);
+  assert.equal(stats.ownDone, 2);
+  assert.equal(stats.hitDays, 0);
+});
+
+test('weekStats не считает удалённые записи', () => {
+  const entries = [
+    { ...base, block: 'custom', exercise: 'прогулка', done: 1, deleted: 1 },
+    { ...base, block: 'pull', done: 1, deleted: 1 },
+  ];
+  assert.deepEqual(
+    weekStats(entries, ['2026-07-27']),
+    { hitDays: 0, totalDays: 1, coldFinishes: 0, stepsDays: 0, ownDone: 0 }
+  );
+});
+
+/* --- имя для своей активности --- */
+
+test('freeCustomTitle отдаёт имя как есть, пока оно свободно', () => {
+  assert.equal(freeCustomTitle([], '2026-07-27', ' Прогулка '), 'Прогулка');
+});
+
+test('freeCustomTitle навешивает счётчик, когда имя в этот день занято', () => {
+  const entries = [
+    { ...base, block: 'custom', exercise: 'Прогулка', done: 1 },
+    { ...base, block: 'custom', exercise: 'Прогулка ·2', done: 1 },
+  ];
+  assert.equal(freeCustomTitle(entries, '2026-07-27', 'прогулка'), 'прогулка ·3');
+});
+
+test('freeCustomTitle не считает занятыми чужой день, другой блок и tombstone', () => {
+  const entries = [
+    { ...base, date: '2026-07-28', block: 'custom', exercise: 'Прогулка', done: 1 },
+    { ...base, block: 'pull', exercise: 'Прогулка', done: 1 },
+    { ...base, block: 'custom', exercise: 'Прогулка', done: 1, deleted: 1 },
+  ];
+  assert.equal(freeCustomTitle(entries, '2026-07-27', 'Прогулка'), 'Прогулка');
 });
 
 /* --- состояние панели синхронизации --- */
