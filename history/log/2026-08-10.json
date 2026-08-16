@@ -133,6 +133,19 @@
     },
     {
       "date": "2026-08-16",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-16T19:56:57.748Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-08-16",
       "window": "своё",
       "block": "custom",
       "exercise": "Tai chi-inspired moves",
