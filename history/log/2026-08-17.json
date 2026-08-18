@@ -26,6 +26,19 @@
       "note": "",
       "updated_at": "2026-08-17T21:12:19.294Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-08-18",
+      "window": "утро",
+      "block": "mob",
+      "exercise": "Йога / тай-чи + запястья/плечи",
+      "planned": "10 мин + 40 сек",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-18T07:26:46.492Z",
+      "device": "phone"
     }
   ]
 }
