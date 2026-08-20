@@ -2,7 +2,7 @@
 // Никакого DOM, никакой сети, никакого localStorage — только данные.
 
 /** Блоки, попадание в которые засчитывается как «день состоялся». */
-const HIT_BLOCKS = new Set(['push', 'pull', 'mob']);
+const HIT_BLOCKS = new Set(['push', 'pull', 'mob', 'kb']);
 
 const norm = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
 

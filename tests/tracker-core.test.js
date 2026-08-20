@@ -95,6 +95,11 @@ test('weekStats не считает попаданием день, где сде
   assert.equal(weekStats(entries, ['2026-07-27']).hitDays, 0);
 });
 
+test('weekStats считает гиревой блок силовым попаданием дня', () => {
+  const entries = [{ ...base, block: 'kb', exercise: 'становая тяга с гирей', done: 1 }];
+  assert.equal(weekStats(entries, ['2026-07-27']).hitDays, 1);
+});
+
 test('weekStats считает финиши закалки отдельным счётчиком', () => {
   const entries = [
     { ...base, date: '2026-07-27', block: 'cold', done: 1 },

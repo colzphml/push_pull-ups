@@ -1,6 +1,6 @@
 // Разбор соглашений разметки недели. Единственное место, знающее про её классы.
 
-const TRACKABLE = new Set(['push', 'pull', 'mob', 'cold', 'steps']);
+const TRACKABLE = new Set(['push', 'pull', 'mob', 'kb', 'cold', 'steps']);
 
 /** Нормализация окна к тем значениям, что лежат в exercise_log. */
 const WINDOW_ALIASES = new Map([

@@ -7,6 +7,7 @@ test('blockFromDotClass достаёт блок из класса точки', (
   assert.equal(blockFromDotClass('meal-type-dot dot-push'), 'push');
   assert.equal(blockFromDotClass('meal-type-dot dot-mob'), 'mob');
   assert.equal(blockFromDotClass('meal-type-dot dot-cold'), 'cold');
+  assert.equal(blockFromDotClass('meal-type-dot dot-kb'), 'kb');
   assert.equal(blockFromDotClass('meal-type-dot dot-rest'), 'rest');
 });
 
@@ -46,6 +47,7 @@ test('isTrackable отсеивает отдых и неизвестные бло
   assert.equal(isTrackable('pull'), true);
   assert.equal(isTrackable('cold'), true);
   assert.equal(isTrackable('steps'), true);
+  assert.equal(isTrackable('kb'), true);
   assert.equal(isTrackable('rest'), false);
   assert.equal(isTrackable(null), false);
 });
