@@ -78,6 +78,19 @@
       "note": "",
       "updated_at": "2026-08-19T17:39:00.880Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-08-20",
+      "window": "когда угодно",
+      "block": "push",
+      "exercise": "Отжимания от опоры (лёгкий)",
+      "planned": "минимум 1 × 8",
+      "done": 1,
+      "actual": "2 × 8",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-20T15:03:47.157Z",
+      "device": "phone"
     }
   ]
 }
