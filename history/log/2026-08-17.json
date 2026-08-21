@@ -104,6 +104,32 @@
       "note": "",
       "updated_at": "2026-08-20T15:03:47.157Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-08-21",
+      "window": "душ",
+      "block": "cold",
+      "exercise": "Холодный финиш C0",
+      "planned": "10 сек",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-21T22:44:47.806Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-08-21",
+      "window": "когда угодно",
+      "block": "pull",
+      "exercise": "Вис на перекладине",
+      "planned": "минимум 1 × 20 сек",
+      "done": 1,
+      "actual": "1 × 20 сек",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-21T22:44:44.440Z",
+      "device": "phone"
     }
   ]
 }
