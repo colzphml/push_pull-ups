@@ -169,6 +169,32 @@
       "note": "",
       "updated_at": "2026-08-22T19:14:15.646Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-08-23",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-23T20:16:26.785Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-08-23",
+      "window": "когда угодно",
+      "block": "pull",
+      "exercise": "Вис (лёгкий)",
+      "planned": "минимум 1 × 20 сек",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-23T20:16:24.835Z",
+      "device": "phone"
     }
   ]
 }
