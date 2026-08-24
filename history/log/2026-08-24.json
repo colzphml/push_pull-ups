@@ -13,6 +13,32 @@
       "note": "",
       "updated_at": "2026-08-24T12:20:46.146Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-08-24",
+      "window": "своё",
+      "block": "custom",
+      "exercise": "Становая с гирей",
+      "planned": "",
+      "done": 1,
+      "actual": "3х8",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-24T15:00:57.535Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-08-24",
+      "window": "своё",
+      "block": "custom",
+      "exercise": "Halo с гирей",
+      "planned": "",
+      "done": 1,
+      "actual": "3 влево и 3 вправо",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-24T15:01:22.317Z",
+      "device": "phone"
     }
   ]
 }
