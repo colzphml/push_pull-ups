@@ -104,6 +104,19 @@
       "note": "",
       "updated_at": "2026-08-29T06:15:02.967Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-08-29",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-08-30T05:01:28.540Z",
+      "device": "phone"
     }
   ]
 }
