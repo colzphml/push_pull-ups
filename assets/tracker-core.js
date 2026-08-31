@@ -1,8 +1,12 @@
 // Чистая логика лога тренировок: ключи, слияние, статистика.
 // Никакого DOM, никакой сети, никакого localStorage — только данные.
 
-/** Блоки, попадание в которые засчитывается как «день состоялся». */
-const HIT_BLOCKS = new Set(['push', 'pull', 'mob', 'kb']);
+/**
+ * Блоки, попадание в которые засчитывается как «день состоялся».
+ * Гиря (kb) сюда не входит: с недели 14 это отдельный ежедневный трек со своим
+ * счётчиком — решение colz «гиря не вместо отжиманий и подтягиваний».
+ */
+const HIT_BLOCKS = new Set(['push', 'pull', 'mob']);
 
 const norm = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
 
@@ -81,11 +85,12 @@ export function syncState({ hasToken, pendingCount, syncing, error }) {
   return { tone: 'ok', label: 'Всё отправлено', button: null, settings: true };
 }
 
-/** Статистика недели: попадаемость по дням и отдельные счётчики закалки, шагов и своего. */
+/** Статистика недели: попадаемость по дням и отдельные счётчики закалки, шагов, гири и своего. */
 export function weekStats(entries, dates) {
   const weekDates = new Set(dates);
   const hitDates = new Set();
   const stepDates = new Set();
+  const kbDates = new Set();
   let coldFinishes = 0;
   let ownDone = 0;
   for (const entry of entries) {
@@ -93,6 +98,7 @@ export function weekStats(entries, dates) {
     if (entry.deleted || entry.done !== 1 || !weekDates.has(entry.date)) continue;
     if (entry.block === 'cold') coldFinishes += 1;
     else if (entry.block === 'steps') stepDates.add(entry.date);
+    else if (entry.block === 'kb') kbDates.add(entry.date);
     else if (entry.block === 'custom') ownDone += 1;
     else if (HIT_BLOCKS.has(entry.block)) hitDates.add(entry.date);
   }
@@ -101,6 +107,7 @@ export function weekStats(entries, dates) {
     totalDays: dates.length,
     coldFinishes,
     stepsDays: stepDates.size,
+    kbDays: kbDates.size,
     ownDone,
   };
 }

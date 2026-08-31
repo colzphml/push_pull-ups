@@ -264,6 +264,13 @@ function renderBar() {
   hits.append(hitsValue, ' дней');
   bar.appendChild(hits);
 
+  // Гиря — отдельный ежедневный трек, в «Попал» не входит; счётчик — на неделях с kb-блоком.
+  if (document.querySelector('.dot-kb') || stats.kbDays > 0) {
+    const kb = document.createElement('span');
+    kb.textContent = `🏋️ гиря: ${stats.kbDays}`;
+    bar.appendChild(kb);
+  }
+
   const cold = document.createElement('span');
   cold.textContent = `❄️ финишей: ${stats.coldFinishes}`;
   bar.appendChild(cold);

@@ -95,9 +95,16 @@ test('weekStats не считает попаданием день, где сде
   assert.equal(weekStats(entries, ['2026-07-27']).hitDays, 0);
 });
 
-test('weekStats считает гиревой блок силовым попаданием дня', () => {
-  const entries = [{ ...base, block: 'kb', exercise: 'становая тяга с гирей', done: 1 }];
-  assert.equal(weekStats(entries, ['2026-07-27']).hitDays, 1);
+test('weekStats считает гиревые дни отдельным счётчиком, а не попаданием', () => {
+  const entries = [
+    { ...base, date: '2026-07-27', block: 'kb', exercise: 'становая тяга с гирей', done: 1 },
+    { ...base, date: '2026-07-28', block: 'kb', exercise: 'становая тяга с гирей', done: 1 },
+    { ...base, date: '2026-07-28', block: 'kb', exercise: 'halo с гирей', done: 1 },
+    { ...base, date: '2026-07-29', block: 'kb', exercise: 'становая тяга с гирей', done: 0 },
+  ];
+  const stats = weekStats(entries, ['2026-07-27', '2026-07-28', '2026-07-29']);
+  assert.equal(stats.kbDays, 2);
+  assert.equal(stats.hitDays, 0);
 });
 
 test('weekStats считает финиши закалки отдельным счётчиком', () => {
@@ -111,7 +118,7 @@ test('weekStats считает финиши закалки отдельным с
 
 test('weekStats на пустом логе возвращает нули', () => {
   const stats = weekStats([], ['2026-07-27']);
-  assert.deepEqual(stats, { hitDays: 0, totalDays: 1, coldFinishes: 0, stepsDays: 0, ownDone: 0 });
+  assert.deepEqual(stats, { hitDays: 0, totalDays: 1, coldFinishes: 0, stepsDays: 0, kbDays: 0, ownDone: 0 });
 });
 
 test('weekStats игнорирует записи с датами вне запрошенной недели', () => {
@@ -121,7 +128,7 @@ test('weekStats игнорирует записи с датами вне зап�
   ];
   assert.deepEqual(
     weekStats(entries, ['2026-07-27']),
-    { hitDays: 0, totalDays: 1, coldFinishes: 0, stepsDays: 0, ownDone: 0 }
+    { hitDays: 0, totalDays: 1, coldFinishes: 0, stepsDays: 0, kbDays: 0, ownDone: 0 }
   );
 });
 
@@ -153,7 +160,7 @@ test('weekStats не считает удалённые записи', () => {
   ];
   assert.deepEqual(
     weekStats(entries, ['2026-07-27']),
-    { hitDays: 0, totalDays: 1, coldFinishes: 0, stepsDays: 0, ownDone: 0 }
+    { hitDays: 0, totalDays: 1, coldFinishes: 0, stepsDays: 0, kbDays: 0, ownDone: 0 }
   );
 });
 
