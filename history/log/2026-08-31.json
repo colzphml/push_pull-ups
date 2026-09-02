@@ -39,6 +39,45 @@
       "note": "",
       "updated_at": "2026-08-31T15:52:14.065Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-09-01",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-02T10:01:11.032Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-09-01",
+      "window": "душ",
+      "block": "cold",
+      "exercise": "Холодный финиш C1",
+      "planned": "10 → 30 сек",
+      "done": 1,
+      "actual": "30 сек",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-02T10:01:17.599Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-09-02",
+      "window": "утро",
+      "block": "mob",
+      "exercise": "Йога / тай-чи + запястья/плечи",
+      "planned": "10 мин + 40 сек",
+      "done": 1,
+      "actual": "Йога 10 минут",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-02T10:01:38.060Z",
+      "device": "phone"
     }
   ]
 }
