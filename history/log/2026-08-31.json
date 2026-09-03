@@ -68,6 +68,19 @@
     },
     {
       "date": "2026-09-02",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-03T04:30:04.620Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-09-02",
       "window": "утро",
       "block": "mob",
       "exercise": "Йога / тай-чи + запястья/плечи",
