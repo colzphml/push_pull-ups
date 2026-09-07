@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Неделя 15 · Свинг входит, вис тянет отжимания (7 – 13 сентября)</title>
+<link rel="manifest" href="/push_pull-ups/manifest.json">
+<meta name="theme-color" content="#0e1217">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Push·Pull">
+<link rel="apple-touch-icon" href="/push_pull-ups/icons/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e1217; --surface:#161d26; --card:#1b232e; --card-back:#1f2a37;
+    --border:#2c3a48; --accent:#4f9dd9; --accent-push:#e0a04e; --accent-mob:#a07fc4;
+    --text:#e6edf3; --text-muted:#8b9bab; --text-dim:#51606e;
+    --tag-bg:#202b38; --shadow:0 8px 32px rgba(0,0,0,0.55);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:0 0 60px}
+  body{padding-bottom:env(safe-area-inset-bottom,16px)}
+  .back-link{display:inline-flex;align-items:center;gap:6px;padding:20px 24px 0;font-size:13px;color:var(--text-muted);text-decoration:none;font-weight:500;transition:color .2s}
+  .back-link{padding-top:max(20px,calc(env(safe-area-inset-top) + 8px))}
+  .back-link:hover{color:var(--accent)}
+  header{padding:16px 24px 0;text-align:center;position:relative}
+  header::after{content:'';display:block;width:60px;height:2px;background:var(--accent);margin:14px auto 0;border-radius:2px}
+  header h1{font-family:'Playfair Display',serif;font-size:clamp(22px,5vw,34px);font-weight:700;letter-spacing:-0.5px;color:var(--text)}
+  header p{margin-top:6px;color:var(--text-muted);font-size:13px;font-weight:300;letter-spacing:0.5px}
+  nav{display:flex;justify-content:center;gap:6px;padding:28px 20px 0;flex-wrap:wrap}
+  .nav-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-muted);padding:9px 20px;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;letter-spacing:0.3px}
+  .nav-btn.active{background:var(--accent);border-color:var(--accent);color:#0e1217}
+  .nav-btn:hover:not(.active){border-color:var(--accent);color:var(--accent)}
+  .section{display:none;padding:28px 16px 0;max-width:1100px;margin:0 auto}
+  .section.active{display:block}
+  .days-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+  @media (max-width:700px){.days-grid{grid-template-columns:1fr}}
+  .day-label{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--accent);text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);letter-spacing:0.5px}
+  .day-sub{font-size:11px;color:var(--text-dim);display:block;margin-top:3px;font-weight:400}
+  .flip-wrap{margin-bottom:10px;cursor:pointer}
+  .flip-inner{position:relative;width:100%}
+  .card-front{width:100%;border-radius:14px;padding:14px 16px;border:1px solid var(--border);background:var(--card);position:relative;transition:border-color .2s,box-shadow .2s,transform .1s}
+  .card-back{display:none}
+  .flip-wrap:hover .card-front{border-color:var(--accent);box-shadow:0 0 0 1px #4f9dd933}
+  .flip-wrap:active .card-front{transform:scale(0.98)}
+  .card-front.opt{border-style:dashed;background:#171f29}
+  .opt-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:var(--text-dim);border:1px solid var(--border);border-radius:100px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+  .min-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#0e1217;background:var(--accent);border-radius:100px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  .new-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#0e1217;background:var(--accent-push);border-radius:100px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  .own-tag{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#0e1217;background:var(--accent-mob);border-radius:100px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  #card-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+  #card-modal.active{display:flex}
+  #card-modal-inner{background:var(--card-back);border:1px solid var(--border);border-radius:16px;padding:20px 20px 16px;width:min(360px,100%);max-height:80vh;overflow-y:auto;position:relative;box-shadow:0 24px 64px rgba(0,0,0,0.6);animation:modalIn .2s ease}
+  @keyframes modalIn{from{opacity:0;transform:scale(0.92) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .modal-close{position:absolute;top:10px;right:12px;font-size:16px;cursor:pointer;color:var(--text-muted);background:none;border:none;line-height:1;padding:4px;transition:color .15s}
+  .modal-close:hover{color:var(--text)}
+  .meal-type{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-dim);font-weight:500;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .meal-type-dot{width:6px;height:6px;border-radius:50%;display:inline-block;flex-shrink:0}
+  .dot-pull{background:#4f9dd9}
+  .dot-push{background:#e0a04e}
+  .dot-mob{background:#a07fc4}
+  .dot-cold{background:#5ec8d8}
+  .dot-steps{background:#6cc08b}
+  .dot-kb{background:#d97a6c}
+  .dot-rest{background:#51606e}
+  .meal-title{font-size:14px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:8px}
+  .meal-kcal{display:inline-block;font-size:12px;font-weight:500;color:var(--accent);background:var(--tag-bg);border:1px solid var(--border);padding:2px 9px;border-radius:100px}
+  .flip-hint{position:absolute;bottom:10px;right:12px;font-size:10px;color:var(--text-dim);display:flex;align-items:center;gap:3px}
+  .back-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;font-weight:500}
+  .portion-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border);gap:8px}
+  .portion-row:last-child{border-bottom:none}
+  .portion-name{font-size:12.5px;color:var(--text);font-weight:400;flex:1}
+  .portion-amount{font-size:12px;color:var(--accent);font-weight:500;white-space:nowrap}
+  .recipe-divider{height:1px;background:var(--border);margin:12px 0 10px}
+  .recipe-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);font-weight:500;margin-bottom:8px}
+  .recipe-step{display:flex;gap:10px;margin-bottom:7px;align-items:flex-start}
+  .recipe-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--tag-bg);border:1px solid var(--accent);color:var(--accent);font-size:10px;font-weight:500;display:flex;align-items:center;justify-content:center}
+  .recipe-text{font-size:12.5px;line-height:1.6;color:var(--text);padding-top:1px}
+  .recipe-text strong{color:var(--accent-push);font-weight:500}
+  .recipe-text em{color:var(--accent);font-style:normal}
+  .recipe-note{font-size:12px;color:var(--text-muted);font-style:italic;margin-top:8px;line-height:1.5}
+  .info-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:28px;margin-bottom:16px}
+  .info-card h2{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:6px}
+  .cook-block{margin-bottom:26px}
+  .cook-block h3{font-family:'Playfair Display',serif;font-size:16px;color:var(--accent-push);margin-bottom:10px}
+  .cook-step{display:flex;gap:14px;margin-bottom:12px;align-items:flex-start}
+  .step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--tag-bg);border:1px solid var(--accent);color:var(--accent);font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center}
+  .step-text{font-size:13.5px;line-height:1.6;color:var(--text);padding-top:3px}
+  .step-text strong{color:var(--accent-push);font-weight:500}
+  .step-text em{color:var(--accent);font-style:normal}
+  .tip-box{background:#13202b;border:1px solid #25455a;border-radius:10px;padding:12px 16px;margin-top:10px;font-size:12.5px;color:var(--text-muted);line-height:1.6}
+  .tip-box::before{content:'💡 '}
+  .warn-box{background:#2a1c17;border:1px solid #6b3f2a;border-radius:10px;padding:12px 16px;margin-top:10px;font-size:12.5px;color:#e3c3ae;line-height:1.6}
+  .warn-box::before{content:'🛟 '}
+  .day-col.today .day-label{color:var(--accent-push)}
+  .today-badge{display:inline-block;font-size:9px;font-weight:600;letter-spacing:0.8px;text-transform:uppercase;color:#0e1217;background:var(--accent-push);border-radius:100px;padding:2px 7px;margin-left:6px;vertical-align:middle}
+  .past-header{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);font-weight:500;padding:24px 0 12px;border-top:1px solid var(--border);margin-top:8px;grid-column:1 / -1}
+  .day-col.past .day-label{color:var(--text-dim)}
+  .day-col.past .card-front{opacity:0.55}
+  .day-col.light .day-label{color:var(--accent-mob);border-bottom-color:var(--accent-mob)}
+  .light-banner{background:#231d2e;border:1px dashed var(--accent-mob);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#c9b8e6;line-height:1.55}
+  .light-banner strong{color:#ddccf2}
+  .week-banner{grid-column:1 / -1;background:#13202b;border:1px solid #25455a;border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:12.5px;color:var(--text-muted);line-height:1.6}
+  .week-banner strong{color:var(--accent)}
+  .stack-banner{grid-column:1 / -1;background:#221c2d;border:1px solid #4a3b63;border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:12.5px;color:#c9b8e6;line-height:1.6}
+  .stack-banner strong{color:var(--accent-mob)}
+  .cold-banner{grid-column:1 / -1;background:#102a30;border:1px solid #2a5560;border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:12.5px;color:#bfe6ec;line-height:1.6}
+  .cold-banner strong{color:#5ec8d8}
+  .steps-banner{grid-column:1 / -1;background:#14281f;border:1px solid #2a5a45;border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:12.5px;color:#c2e6cf;line-height:1.6}
+  .steps-banner strong{color:#6cc08b}
+  .kb-banner{grid-column:1 / -1;background:#2a1c19;border:1px solid #6b4038;border-radius:12px;padding:14px 16px;margin-bottom:6px;font-size:12.5px;color:#e8c8c0;line-height:1.6}
+  .kb-banner strong{color:#d97a6c}
+  .ex-figure{display:flex;gap:22px;align-items:flex-end;justify-content:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 16px 14px;margin:4px 0 16px}
+  .ex-phase{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .ex-phase .cap{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--text-dim);text-align:center;max-width:180px;line-height:1.4}
+  .ex-figure svg{display:block;overflow:visible}
+  .ex-sub{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);font-weight:500;margin:14px 0 7px}
+  #ptr{position:fixed;top:-76px;left:50%;transform:translateX(-50%);width:44px;height:76px;z-index:999;pointer-events:none;opacity:0}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="../../index.html">← Все недели</a>
+<header>
+  <h1>Неделя 15 · Свинг входит, вис тянет отжимания</h1>
+  <p>7 – 13 сентября 2026 · турник: цель 3 дня, минутка «вис → отжимания» · 🏋️ KB1: русский свинг в ср и пт · ❄️ C1: 30 сек · Чт и Вс полегче</p>
+</header>
+
+<nav>
+  <button class="nav-btn active" onclick="showSection('days')">📅 Дни</button>
+  <button class="nav-btn" onclick="showSection('progress')">📈 Прогрессия</button>
+  <button class="nav-btn" onclick="showSection('tech')">🧰 Техника</button>
+</nav>
+<section class="section active" id="days">
+  <div class="days-grid">
+
+    <div class="week-banner">
+      <strong>Отпуск: много ходил, силовых и душа мало — и это не против тебя.</strong> Шаги 7 из 7 — первая полная неделя по отметкам; в понедельник вис 3×20 и становая 3×8, в пятницу вис, становая и видео, в душе две тридцатки. Структуру недели 14 — турник и гиря отдельными строками — отпуск не проверил, поэтому держу её как есть: те же уровни, те же объёмы, цель по турнику — <strong>3 дня из 7</strong>. Одно чиню: <strong>отжимания</strong>. Две недели подряд — ноль из пяти плановых дней, и картина одна: дни с висом (пн, пт) были и днями гири, а дни с отжиманиями — пустыми целиком. У виса есть крючок: вернулся с прогулки — повис. У отжиманий крючка нет. С этой недели в дни отжиманий — <strong>турник-минутка</strong>: повис 20 секунд как обычно → тут же 8 отжиманий от подоконника или от стены рядом. Одна карточка, одна отметка, около минуты.
+    </div>
+
+    <div class="kb-banner">
+      <strong>🏋️ Видео разобрано: порог KB0→KB1 пройден.</strong> В нижней точке спина прямая, таз назад, голень почти вертикальна — шарнир, не присед; ни округления, ни переразгиба. Одна правка: <strong>шея</strong> — взгляд шёл вперёд, шея переразогнута. Смотрим в пол метра за два перед собой, шея в линию со спиной; перед свингом это критично. Входит <strong>русский свинг</strong>: среда и пятница, 3×10 в формате «10 свингов в начале минуты — отдых до конца минуты», минимум 1×10, гиря <strong>до уровня груди и не выше</strong>. Остальная волна: пн становая, вт гоблет-присед, сб переноска (оба переезжают с прошлой недели — не успели), чт и вс — техника без веса. Минимум любого дня — один подход.
+    </div>
+
+    <div class="cold-banner">
+      <strong>❄️ Две отметки — вторник 30 сек и суббота.</strong> Душа было мало, ты сказал сам — значит, формула «есть душ = есть финиш» отработала на все сто, и ровно это я считаю. Тридцатка теперь дважды подряд (29.08 и 01.09). Ничего не меняю: <strong>10 секунд = плюсик</strong>, цель — ещё две-три спокойные тридцатки. Кран в сентябре начинает холодеть: те же 30 секунд в более холодной воде — уже прогресс, за 40 не гонимся. Просьба одна — пиши секунды в отметку, как во вторник: субботний финиш остался без цифры.
+    </div>
+
+    <div class="steps-banner">
+      <strong>🚶 7 из 7 — первая полная неделя по отметкам.</strong> Отпуск и прогулки сделали её самой «ходячей» в проекте. Рабочая неделя другая, и семёрки я не жду: опорные прежние — <strong>ср, пт, сб, вс</strong>, понедельник приходит сам третью неделю подряд. Четыре-пять дней по 10к на рабочей неделе — норма, а не откат. Ноги после отпускной ходьбы гудят — ходи отрезками по 25-40 минут. И новое: свинг в день больших шагов — после отдыха, не сразу с улицы.
+    </div>
+
+    <!-- ПОНЕДЕЛЬНИК 7 -->
+    <div class="day-col" data-date="2026-09-07">
+      <div class="day-label">Понедельник, 7 сентября<span class="day-sub">5 карточек · вис и становая — твой рабочий понедельник</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Мягкая практика<span class="own-tag">твоё</span></div><div class="meal-title">Йога / тай-чи + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">После отпуска — с чего удобнее</div><div class="portion-row"><span class="portion-name">Практика</span><span class="portion-amount">~10 мин, любая из двух</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="portion-row"><span class="portion-name">Статус</span><span class="portion-amount">личное дело</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">В отпуске практика была один раз — йога в среду. Это не долг: карточка здесь, чтобы практику было видно, а не чтобы давить.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">В конце 40 сек: <strong>запястья</strong> (ладонь от себя/к себе по 15 сек) + <strong>плечи</strong> (вращения 10 сек).</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Практики не было — halo в гиревой карточке разогреет плечи сам.</div></div><div class="recipe-note">Содержание обеих практик не трогаю — они твои. Считаю только факт.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>После прогулки · Турник<span class="min-tag">минимум</span></div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">минимум 1 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Два понедельника подряд — 3×20. Третий?</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="portion-row"><span class="portion-name">Крючок</span><span class="portion-amount">вернулся с прогулки</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это работает</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Понедельник — твой самый надёжный день:</strong> 24.08 и 31.08 вис 3×20 при минимуме один, и оба раза следом становая. Повтори рисунок: прогулка → турник → гиря.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Хват на ширине плеч, плечи <em>опустить от ушей</em>, дышать ровно, не раскачиваться. Досчитал 20 — слезай, даже если можешь больше.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Опция в конце подхода — 5 сек активного виса, лопатки вниз-назад. Не задание.</div></div><div class="recipe-note">Секунды держим на 20. Рост 20→25→30 начнётся, когда три турник-дня в неделю случатся дважды подряд.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-kb"></span>Когда угодно · Гиря 12 кг<span class="min-tag">минимум</span></div><div class="meal-title">Гиря 12 кг — становая + halo</div><span class="meal-kcal">минимум 1 × 6</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Становая — как в оба прошлых понедельника</div><div class="portion-row"><span class="portion-name">Разминка</span><span class="portion-amount">шарнир у стены 5-8 без веса</span></div><div class="portion-row"><span class="portion-name">Становая</span><span class="portion-amount">2-3 × 8</span></div><div class="portion-row"><span class="portion-name">Halo</span><span class="portion-amount">2 × 3 круга в сторону</span></div><div class="portion-row"><span class="portion-name">Опция</span><span class="portion-amount">5 замахов — подготовка к свингу</span></div><div class="portion-row"><span class="portion-name">Минимум дня</span><span class="portion-amount">1 × 6</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Пять раз по 3×8 — и пять раз спина промолчала, а видео подтвердило шарнир. <strong>Доза твоя</strong>, держим, выше не гонимся.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Ручка над серединой стоп, таз назад, спина прямая. Правка из видео: <strong>взгляд в пол метра за два перед собой</strong>, не вперёд — шея в линию со спиной. Встаёшь, толкая пол ногами; вверху ягодицы сжаты, без прогиба.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Опция после становой — <strong>5 замахов</strong>: гиря на полу в 30 см перед стопами, наклон шарниром, «закинуть» гирю назад между ног и вернуть на пол. Это первый кирпич среды — свинга.</div></div><div class="recipe-note">Босиком или на жёсткой плоской подошве. Округлилась поясница — подход окончен, без обсуждений.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Первый рабочий день после отпуска</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Статус дня</span><span class="portion-amount">не опорный — бонус</span></div><div class="portion-row"><span class="portion-name">Факт</span><span class="portion-amount">взят 3 недели подряд</span></div><div class="recipe-divider"></div><div class="recipe-label">Как идти</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Понедельник ты берёшь сам третью неделю — опорным не назначаю, он и так приходит. Сегодня, после отпуска, — как получится.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Ноги мягче переносят ходьбу <strong>отрезками</strong>: 2-3 выхода по 25-40 минут лучше одного длинного.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Вернулся с прогулки — повис 20 секунд по дороге, дома становая. Три плюсика одним маршрутом.</div></div><div class="recipe-note">Эллипсоид вместо улицы — тоже отлично: пиши в примечание, как раньше.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка<span class="new-tag">C1</span></div><div class="meal-title">Холодный финиш C1</div><span class="meal-kcal">10 → 30 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Есть душ — есть финиш</div><div class="portion-row"><span class="portion-name">Порог</span><span class="portion-amount">10 сек = плюсик</span></div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">20-30 сек спокойно</span></div><div class="portion-row"><span class="portion-name">Дыхание</span><span class="portion-amount">длинный выдох</span></div><div class="portion-row"><span class="portion-name">Голова</span><span class="portion-amount">не мочить</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Обычный душ до конца → переключил на холодную: <strong>кисти и стопы → руки и ноги → спина</strong>. Первые секунды — только выдох.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">На десятой секунде спокойно — досчитай до 20-30 и выходи. Тридцатка у тебя уже дважды.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Отметь и <strong>напиши секунды</strong>. Нет душа — карточка не в счёт, это не пропуск.</div></div><div class="recipe-note">Сентябрьская вода холоднее августовской: те же секунды — уже шаг вперёд.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ВТОРНИК 8 -->
+    <div class="day-col" data-date="2026-09-08">
+      <div class="day-label">Вторник, 8 сентября<span class="day-sub">5 карточек · турник-минутка + гоблет-присед</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Мягкая практика<span class="own-tag">твоё</span></div><div class="meal-title">Йога / тай-чи + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Сегодня отжимания — запястьям нужна минута</div><div class="portion-row"><span class="portion-name">Практика</span><span class="portion-amount">~10 мин, любая из двух</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="portion-row"><span class="portion-name">Без практики</span><span class="portion-amount">20 сек запястий перед минуткой</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Йога или тай-чи — что ближе. Факт важнее содержания.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">В конце 40 сек: <strong>запястья</strong> (ладонь от себя/к себе по 15 сек) + <strong>плечи</strong> (вращения 10 сек).</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Практики не было — <strong>20 сек запястий перед отжиманиями</strong> отдельно: P1 грузит кисть.</div></div><div class="recipe-note">Практика — твоё дело. Разминка кисти перед отжиманиями — моё требование.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>После прогулки · Турник<span class="min-tag">минимум</span></div><div class="meal-title">Вис 20 сек → отжимания (P1)</div><span class="meal-kcal">20 сек + минимум 1 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Турник-минутка: вис — крючок, отжимания — плюсик</div><div class="portion-row"><span class="portion-name">Шаг 1 · вис</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Шаг 2 · отжимания</span><span class="portion-amount">минимум 1 × 8</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 8, отдых 60-90 сек</span></div><div class="portion-row"><span class="portion-name">Опора</span><span class="portion-amount">подоконник / столешница — или стена рядом</span></div><div class="portion-row"><span class="portion-name">Отметка</span><span class="portion-amount">за отжимания</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это работает</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Вернулся с прогулки → турник → <strong>повис 20 секунд</strong>, как в понедельник. Это не отдельное задание — это способ оказаться в нужном месте в нужный момент.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Слез — <strong>не уходи</strong>: ладони на подоконник (капитальная опора) или на стену тут же. Тело — планка, локти ~45°, грудь к краю на вдохе, вверх на выдохе. Восемь раз — день турника зелёный.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Легко пошло — ещё подход-два через 60-90 сек, стойку не меняем. Не идёт — от стены, день засчитан.</div></div><div class="recipe-note">P1 подтверждён трижды (2×8, 3×8, 2×8). Пропали не силы — пропал момент. Минутка его возвращает.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-kb"></span>Когда угодно · Гиря 12 кг<span class="new-tag">новое</span></div><div class="meal-title">Гиря 12 кг — гоблет-присед</div><span class="meal-kcal">минимум 1 × 6</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Гоблет-присед — спине выходной от шарнира</div><div class="portion-row"><span class="portion-name">Разминка</span><span class="portion-amount">halo 3 круга в сторону</span></div><div class="portion-row"><span class="portion-name">Гоблет-присед</span><span class="portion-amount">2 × 6-8</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">60-90 сек</span></div><div class="portion-row"><span class="portion-name">Минимум дня</span><span class="portion-amount">1 × 6</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Гиря за рога дном вниз у груди, <strong>локти вниз</strong>, стопы чуть шире плеч, носки чуть наружу.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Садишься <em>между коленей</em>: колени в сторону носков, пятки на полу, спина прямая, корпус вертикальный. Глубина — докуда чисто, без фанатизма. Гиря спереди — противовес: с ней присед ровнее, чем без веса.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Вверх — толкая пол, вверху ягодицы сжаты. Локти вниз всё время — гиря не «ездит» по груди.</div></div><div class="recipe-note">Не успел на прошлой неделе — попробуй сегодня хоть 1×6. Колени болят (не устают) — стоп и скажи мне.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вторник — бонус</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Статус дня</span><span class="portion-amount">не опорный — бонус</span></div><div class="recipe-divider"></div><div class="recipe-label">Как идти</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Взял — отлично, не взял — не считается. Вторник в проекте бывает и пустым, это нормально.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Прогулка сегодня — крючок для минутки: вернулся → вис → отжимания.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Отрезками, если ноги после отпускных семи дней подряд просят короткий день.</div></div><div class="recipe-note">Эллипсоид — считается, пиши в примечание.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка<span class="new-tag">C1</span></div><div class="meal-title">Холодный финиш C1</div><span class="meal-kcal">10 → 30 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">В прошлый вторник было 30 — повтори</div><div class="portion-row"><span class="portion-name">Порог</span><span class="portion-amount">10 сек = плюсик</span></div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">20-30 сек спокойно</span></div><div class="portion-row"><span class="portion-name">Порядок</span><span class="portion-amount">конечности → спина</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Кисти и стопы → руки и ноги → спина. Длинный выдох, плечи вниз, чуть двигаться.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Десять секунд — плюсик; спокойно — до 30. Грудь не трогаем, голову не мочим.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Секунды — в отметку.</div></div><div class="recipe-note">Тридцатка должна стать скучной — тогда пойдём дальше.</div></div>
+      </div></div>
+    </div>
+
+    <!-- СРЕДА 9 -->
+    <div class="day-col" data-date="2026-09-09">
+      <div class="day-label">Среда, 9 сентября<span class="day-sub">5 карточек · первый свинг · опорный день шагов</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Мягкая практика<span class="own-tag">твоё</span></div><div class="meal-title">Йога / тай-чи + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Перед первым свингом разминка особенно кстати</div><div class="portion-row"><span class="portion-name">Практика</span><span class="portion-amount">~10 мин, любая из двух</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">В прошлую среду йога была — хороший день для повтора: тазобедренным и грудному отделу перед свингом это в плюс.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">В конце 40 сек: запястья 15+15 сек, плечи 10 сек вращений.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Практики не было — шарнир у стены 8 раз и halo перед гирей закроют разминку.</div></div><div class="recipe-note">Практика — твоё дело. Разминка перед свингом — моё требование.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>После прогулки · Турник<span class="min-tag">минимум</span></div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">минимум 1 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Опорный день шагов — значит, будет и крючок</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="portion-row"><span class="portion-name">Крючок</span><span class="portion-amount">вернулся с прогулки</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это работает</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Среда — опорный день шагов: прогулка будет, значит, будет и турник. 20 секунд по дороге домой.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Хват на ширине плеч, плечи от ушей, дыхание ровное, без раскачки.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Свинг сегодня — отдельная карточка ниже. Вис его не заменяет, он — вис.</div></div><div class="recipe-note">Один подход — день зелёный. Три — бонус.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-kb"></span>Когда угодно · Гиря 12 кг<span class="new-tag">новое</span></div><div class="meal-title">Гиря 12 кг — свинг (первый)</div><span class="meal-kcal">минимум 1 × 10</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Русский свинг — первый раз: техника важнее счёта</div><div class="portion-row"><span class="portion-name">Разминка</span><span class="portion-amount">шарнир у стены 5-8 → halo 3+3 → становая 1 × 6</span></div><div class="portion-row"><span class="portion-name">Замахи</span><span class="portion-amount">5 (гиря между ног → на пол)</span></div><div class="portion-row"><span class="portion-name">Свинг</span><span class="portion-amount">3 × 10 · «10 в начале минуты»</span></div><div class="portion-row"><span class="portion-name">Высота</span><span class="portion-amount">до груди, не выше</span></div><div class="portion-row"><span class="portion-name">Минимум дня</span><span class="portion-amount">1 × 10</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Старт:</strong> гиря на полу ~30 см перед стопами. Наклон шарниром, взгляд в пол ~2 м впереди, спина прямая. Замах — «закинуть» гирю назад между ног, <em>высоко</em>: предплечья к паху, не к коленям.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Щелчок:</strong> таз вперёд, ноги выпрямляются, ягодицы сжаты — гиря летит сама. Руки — верёвки, плечи не тянут. Вверху — стоячая планка, гиря на уровне груди и <strong>не выше</strong>, резкий выдох.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Вниз:</strong> жди, пока гиря сама пойдёт вниз, и только тогда таз назад. Десять раз → отдых до конца минуты → ещё десять. Последний свинг — вернуть на пол шарниром, не бросать.</div></div><div class="recipe-note">Первый день — 3×10 максимум, даже если легко. Округлилась спина, гиря ушла к коленям или выше груди — подход окончен. Вечером напиши, как спина и что было непонятно.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Опорный день №1</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Статус дня</span><span class="portion-amount">опорный</span></div><div class="portion-row"><span class="portion-name">Факт</span><span class="portion-amount">держится с недели 11</span></div><div class="recipe-divider"></div><div class="recipe-label">Как идти</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Среда — опорный будний, она у тебя стабильна четыре недели подряд.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Свинг сегодня грузит ноги дополнительно:</strong> если шаги большие — свинг после отдыха, не сразу с улицы.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Вернулся с прогулки — повис 20 секунд.</div></div><div class="recipe-note">Эллипсоид — считается, пиши в примечание.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка<span class="new-tag">C1</span></div><div class="meal-title">Холодный финиш C1</div><span class="meal-kcal">10 → 30 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Третья тридцатка?</div><div class="portion-row"><span class="portion-name">Порог</span><span class="portion-amount">10 сек = плюсик</span></div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">20-30 сек спокойно</span></div><div class="portion-row"><span class="portion-name">После свинга</span><span class="portion-amount">душ — самое место</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Конечности первыми, корпус последним, голову не мочим.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Первые 15 секунд — только длинный выдох; дальше — досчитать спокойно.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Секунды — в отметку. Нет душа — не пропуск.</div></div><div class="recipe-note">Холодный финиш после гири — приятная точка дня, попробуй.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ЧЕТВЕРГ 10 — ЛЁГКИЙ -->
+    <div class="day-col light" data-date="2026-09-10">
+      <div class="day-label">Четверг, 10 сентября<span class="day-sub">лёгкий день · 5 карточек</span></div>
+      <div class="light-banner"><strong>Лёгкий день.</strong> Объёма нет нигде: турник-минутка — вис 20 сек и один подход отжиманий, можно от стены; гиря — без веса вовсе: шарнир у стены, «теневой» свинг без гири и halo. Задней цепи после первого свинга положен день передышки. Шаги и холодный финиш остаются: ходьба и вода — не тренировка. <strong>Лёгкий четверг недели 12 принёс единственный P1 той недели — 2×8 при минимуме один. Повтори.</strong></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Мягкая практика<span class="own-tag">твоё</span></div><div class="meal-title">Йога / тай-чи + мобилити дольше</div><span class="meal-kcal">10 мин + 2 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Лёгкий день — мобилити дольше</div><div class="portion-row"><span class="portion-name">Практика</span><span class="portion-amount">~10 мин, по желанию</span></div><div class="portion-row"><span class="portion-name">Мобилити</span><span class="portion-amount">2 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Две минуты</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Запястья</strong> 2×20 сек (ладонь от себя/к себе) — перед отжиманиями они нужны и на лёгком дне.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Плечи:</strong> вращения + «доставание лопаток» 2×20 сек. <strong>Грудной:</strong> кошка-корова 30-40 сек — после вчерашнего свинга особенно.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Тянет в пояснице мышечно — кошка-корова помогает. Боль, а не крепатура, — скажи мне.</div></div><div class="recipe-note">Практика по желанию; две минуты мобилити — единственное задание карточки.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>После прогулки · Турник<span class="min-tag">минимум</span></div><div class="meal-title">Вис 20 сек → отжимания (лёгкий)</div><span class="meal-kcal">20 сек + минимум 1 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Минутка на лёгком: от стены — тоже минутка</div><div class="portion-row"><span class="portion-name">Шаг 1 · вис</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Шаг 2 · отжимания</span><span class="portion-amount">1 × 8, от стены ок</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">не нужен</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это работает</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Вернулся → повис 20 → <strong>8 отжиманий от стены или подоконника</strong>. Один подход — и день турника зелёный.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">На лёгком дне не бонусим: один подход — и всё.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Практики утром не было — 20 сек запястий перед отжиманиями.</div></div><div class="recipe-note">Лёгкий четверг недели 12 — 2×8. Тот же рисунок, тот же день.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-kb"></span>Когда угодно · Гиря 12 кг<span class="min-tag">минимум</span></div><div class="meal-title">Гиря 12 кг — техника без веса (лёгкий)</div><span class="meal-kcal">шарнир + halo</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Без гири: шарнир, теневой свинг, halo</div><div class="portion-row"><span class="portion-name">Шарнир у стены</span><span class="portion-amount">8 раз</span></div><div class="portion-row"><span class="portion-name">Теневой свинг</span><span class="portion-amount">10 раз, без гири</span></div><div class="portion-row"><span class="portion-name">Halo</span><span class="portion-amount">2 × 3, можно без гири</span></div><div class="portion-row"><span class="portion-name">Становая / свинг с весом</span><span class="portion-amount">сегодня нет</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Шарнир у стены:</strong> стопы в 15-20 см от стены, таз назад до касания ягодицами, спина прямая, взгляд в пол. 8 раз.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Теневой свинг:</strong> то же движение, руки свободно качаются между ног и вперёд до груди, таз щёлкает. Без гири — учим ритм и «щелчок» с нулевым риском. 10 раз.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Halo — с гирей или без. Две минуты — гиревой день взят.</div></div><div class="recipe-note">Лёгкий день гири — не пропуск, а отметка. Спина отдыхает под завтрашний свинг.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Четверг — бонус</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Статус дня</span><span class="portion-amount">не опорный — бонус</span></div><div class="recipe-divider"></div><div class="recipe-label">Как идти</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Лёгкий день — не про ноги: ходьба остаётся. Взял 10к — отлично, не взял — не считается.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Ноги после отпуска и свинга гудят — короткие отрезки, мягкая подошва.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Вернулся — вис 20 сек → 8 отжиманий. Минутка.</div></div><div class="recipe-note">Усталость — норма, боль — стоп.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка<span class="new-tag">C1</span></div><div class="meal-title">Холодный финиш C1</div><span class="meal-kcal">10 → 30 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Лёгкий день — холод остаётся</div><div class="portion-row"><span class="portion-name">Порог</span><span class="portion-amount">10 сек = плюсик</span></div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">20-30 сек спокойно</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Закалка — не тренировка: лёгкий день на неё не распространяется. Есть душ — есть финиш.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Конечности → спина, длинный выдох, десять секунд — плюсик, дальше по самочувствию.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Секунды — в отметку.</div></div><div class="recipe-note">Нет душа — карточка не в счёт.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ПЯТНИЦА 11 -->
+    <div class="day-col" data-date="2026-09-11">
+      <div class="day-label">Пятница, 11 сентября<span class="day-sub">5 карточек · свинг второй + видео · опорный день шагов</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Мягкая практика<span class="own-tag">твоё</span></div><div class="meal-title">Йога / тай-чи + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Разминка перед вторым свингом</div><div class="portion-row"><span class="portion-name">Практика</span><span class="portion-amount">~10 мин, любая из двух</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Сегодня свинг, возможно под камеру — тазобедренным и грудному отделу разминка кстати.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">В конце: запястья 15+15 сек, плечи 10 сек вращений.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Практики не было — шарнир у стены 8 раз перед гирей, этого хватит.</div></div><div class="recipe-note">Мягкая практика — твоё дело. Разминка перед весом — моё требование.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>После прогулки · Турник<span class="min-tag">минимум</span></div><div class="meal-title">Вис на перекладине</div><span class="meal-kcal">минимум 1 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Пятница дважды подряд была с висом</div><div class="portion-row"><span class="portion-name">Минимум</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">90 сек</span></div><div class="portion-row"><span class="portion-name">Крючок</span><span class="portion-amount">вернулся с прогулки</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это работает</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Обе прошлые пятницы — вис и гиря. Рисунок держим: прогулка → вис → свинг.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Хват на ширине плеч, плечи от ушей, дыхание ровное. Досчитал 20 — слезай.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Опция: последние 5 сек — активный вис, лопатки вниз-назад.</div></div><div class="recipe-note">Хват после свинга может быть уставшим — вис делай <strong>до</strong> гири, не после.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-kb"></span>Когда угодно · Гиря 12 кг<span class="new-tag">новое</span></div><div class="meal-title">Гиря 12 кг — свинг + видео</div><span class="meal-kcal">минимум 1 × 10</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Второй свинг: 3-5×10 и, если удобно, 20 секунд видео</div><div class="portion-row"><span class="portion-name">Разминка</span><span class="portion-amount">шарнир у стены → halo 3+3 → становая 1 × 6</span></div><div class="portion-row"><span class="portion-name">Свинг</span><span class="portion-amount">3-5 × 10 · «10 в начале минуты»</span></div><div class="portion-row"><span class="portion-name">Минимум дня</span><span class="portion-amount">1 × 10</span></div><div class="portion-row"><span class="portion-name">Видео</span><span class="portion-amount">опция: 20 сек сбоку, весь корпус</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Всё как в среду. Среда была чистой и лёгкой — до пяти минут-подходов; что-то было непонятно — 3×10 и внимание на одну вещь: <strong>гиря в пах, не к коленям</strong>.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Верх — планка, гиря до груди. Шея в линию: взгляд в пол ~2 м впереди внизу, на горизонт вверху. Резкий выдох на щелчке таза.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Видео</strong> — не обязательно, но полезно: телефон на пол сбоку, один подход, облегающая майка. Разберу на выходных — это пропуск к объёму (KB2).</div></div><div class="recipe-note">Сорвался хват, гиря пошла выше груди, поясница округлилась — подход окончен. После 10к шагов — свинг после отдыха, не сразу.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Опорный день №2</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Статус дня</span><span class="portion-amount">опорный</span></div><div class="recipe-divider"></div><div class="recipe-label">Как идти</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Пятница открывает опорную тройку выходных: пт, сб, вс.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Свинг — после отдыха от прогулки, ноги уже поработали.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Вернулся — повис 20 секунд, потом гиря.</div></div><div class="recipe-note">Эллипсоид — считается, пиши в примечание.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка<span class="new-tag">C1</span></div><div class="meal-title">Холодный финиш C1</div><span class="meal-kcal">10 → 30 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Финиш после свинга</div><div class="portion-row"><span class="portion-name">Порог</span><span class="portion-amount">10 сек = плюсик</span></div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">20-30 сек спокойно</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Конечности → спина, длинный выдох, плечи вниз.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Десять секунд — плюсик; спокойно — до 30.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Секунды — в отметку.</div></div><div class="recipe-note">Никакой гипервентиляции и задержек дыхания у воды.</div></div>
+      </div></div>
+    </div>
+
+    <!-- СУББОТА 12 -->
+    <div class="day-col" data-date="2026-09-12">
+      <div class="day-label">Суббота, 12 сентября<span class="day-sub">5 карточек · минутка + переноска · опорный день шагов</span></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Мягкая практика<span class="own-tag">твоё</span></div><div class="meal-title">Йога / тай-чи + запястья/плечи</div><span class="meal-kcal">10 мин + 40 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Выходной — время для практики есть</div><div class="portion-row"><span class="portion-name">Практика</span><span class="portion-amount">~10 мин, любая из двух</span></div><div class="portion-row"><span class="portion-name">Добавка в конце</span><span class="portion-amount">40 сек</span></div><div class="portion-row"><span class="portion-name">Без практики</span><span class="portion-amount">20 сек запястий перед минуткой</span></div><div class="recipe-divider"></div><div class="recipe-label">Что делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Тай-чи впервые случился в воскресенье — выходные подходят мягкой практике лучше будней.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">В конце 40 сек: запястья + плечи.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Практики не было — 20 сек запястий перед отжиманиями.</div></div><div class="recipe-note">Считаю факт, содержание — твоё.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-push"></span>После прогулки · Турник<span class="min-tag">минимум</span></div><div class="meal-title">Вис 20 сек → отжимания (P1)</div><span class="meal-kcal">20 сек + минимум 1 × 8</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Вторая полная минутка недели</div><div class="portion-row"><span class="portion-name">Шаг 1 · вис</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Шаг 2 · отжимания</span><span class="portion-amount">минимум 1 × 8</span></div><div class="portion-row"><span class="portion-name">Полный день</span><span class="portion-amount">3 × 8, отдых 60-90 сек</span></div><div class="portion-row"><span class="portion-name">Опора</span><span class="portion-amount">подоконник / столешница — или стена</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это работает</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Вернулся с прогулки → повис 20 → не уходя, <strong>8 отжиманий</strong>. Отметка — за отжимания.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Вторник прошёл легко — сегодня полный день: 3×8 через 60-90 сек, та же опора, та же стойка.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Тело — планка, локти ~45°, грудь к краю на вдохе, вверх на выдохе. Опора капитальная — покачай перед стартом.</div></div><div class="recipe-note">От стены — тоже плюсик. Переход P1→P2 — когда 3×8 легко в 3-4 днях недели, не раньше.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-kb"></span>Когда угодно · Гиря 12 кг<span class="new-tag">новое</span></div><div class="meal-title">Гиря 12 кг — переноска + halo</div><span class="meal-kcal">минимум 1 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Чемоданная переноска — хват для виса, корпус для всего</div><div class="portion-row"><span class="portion-name">Разминка</span><span class="portion-amount">halo 3+3</span></div><div class="portion-row"><span class="portion-name">Переноска</span><span class="portion-amount">2 × 20-30 сек на сторону</span></div><div class="portion-row"><span class="portion-name">Отдых</span><span class="portion-amount">смена руки</span></div><div class="portion-row"><span class="portion-name">Опция</span><span class="portion-amount">становая 1 × 8 в конце</span></div><div class="portion-row"><span class="portion-name">Минимум дня</span><span class="portion-amount">1 × 20 сек</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Гиря в одной руке — поднял шарниром. Стоишь ровно: <strong>плечи на одном уровне</strong>, корпус вертикальный, к гире не заваливаться.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Идёшь спокойным шагом 20-30 сек (по комнате туда-обратно), потом рука меняется. «Движущаяся боковая планка».</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Опустил — шарниром, не спиной. Хочешь — становая 1×8 в конце; спина после двух свингов сама скажет, надо ли.</div></div><div class="recipe-note">Не успела на прошлой неделе — попробуй хотя бы 1×20 сек на сторону. Хват после переноски — прямой вклад в вис.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Опорный день №3</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Статус дня</span><span class="portion-amount">опорный</span></div><div class="recipe-divider"></div><div class="recipe-label">Как идти</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Выходной — длинная прогулка сама просится; отрезками всё равно мягче.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Вернулся — минутка: вис 20 → отжимания 8.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Переноску можно и на улице не делать — она домашняя, две минуты.</div></div><div class="recipe-note">Эллипсоид — считается.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка<span class="new-tag">C1</span></div><div class="meal-title">Холодный финиш C1</div><span class="meal-kcal">10 → 30 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">В прошлую субботу финиш был — теперь с цифрой</div><div class="portion-row"><span class="portion-name">Порог</span><span class="portion-amount">10 сек = плюсик</span></div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">20-30 сек спокойно</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Конечности → спина, длинный выдох, голову не мочим.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Десять секунд — плюсик; спокойно — до 30.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Секунды — в отметку:</strong> субботний финиш прошлой недели остался без цифры, и я не знаю, была ли это тридцатка.</div></div><div class="recipe-note">Выходить до сильной дрожи. Лёгкий озноб после — норма.</div></div>
+      </div></div>
+    </div>
+
+    <!-- ВОСКРЕСЕНЬЕ 13 — ЛЁГКИЙ -->
+    <div class="day-col light" data-date="2026-09-13">
+      <div class="day-label">Воскресенье, 13 сентября<span class="day-sub">лёгкий день · итоги</span></div>
+      <div class="light-banner"><strong>Лёгкий день — закрываем неделю.</strong> Вис один подход, гиря — техника в охотку. Вечером напиши итоги по пунктам: ① турник: в скольких днях был вис или минутка (цель 3) и случились ли отжимания · ② свинг: оба дня? как спина, что было непонятно · ③ гиря: сколько дней из семи, попробованы ли гоблет и переноска · ④ ❄️ финиши и тридцатки, с секундами · ⑤ шаги на рабочей неделе и ноги · ⑥ практика и своё.</div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-mob"></span>Утро · Мягкая практика<span class="own-tag">твоё</span></div><div class="meal-title">Йога / тай-чи + мобилити дольше</div><span class="meal-kcal">10 мин + 2 мин</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Воскресенье — день тай-чи</div><div class="portion-row"><span class="portion-name">Практика</span><span class="portion-amount">~10 мин, по желанию</span></div><div class="portion-row"><span class="portion-name">Мобилити</span><span class="portion-amount">2 мин</span></div><div class="recipe-divider"></div><div class="recipe-label">Две минуты</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Запястья 2×20 сек, плечи 2×20 сек, грудной — кошка-корова 30-40 сек.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Тай-чи родился в воскресенье (16.08, 9 упражнений по минуте). Захочешь — повтори; нет — карточка не обидится.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Спина после недели со свингом — послушай её на кошке-корове и напиши в итогах.</div></div><div class="recipe-note">Практика по желанию, две минуты мобилити — задание.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-pull"></span>После прогулки · Турник<span class="min-tag">минимум</span></div><div class="meal-title">Вис (лёгкий)</div><span class="meal-kcal">минимум 1 × 20 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Один подход — и неделя закрыта</div><div class="portion-row"><span class="portion-name">Вис</span><span class="portion-amount">1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Больше</span><span class="portion-amount">не нужно</span></div><div class="recipe-divider"></div><div class="recipe-label">Как это работает</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Вернулся с прогулки — 20 секунд. Если это третий турник-день недели — цель взята.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Хват спокойный, плечи от ушей, слезай до срыва хвата.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Опция: 5 сек активного виса в конце.</div></div><div class="recipe-note">Лёгкий день: один подход — это и минимум, и максимум.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-kb"></span>Когда угодно · Гиря 12 кг<span class="min-tag">минимум</span></div><div class="meal-title">Гиря 12 кг — техника в охотку</div><span class="meal-kcal">шарнир + halo</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">В охотку: шарнир, halo, по желанию становая 1×6</div><div class="portion-row"><span class="portion-name">Шарнир у стены</span><span class="portion-amount">8 раз</span></div><div class="portion-row"><span class="portion-name">Halo</span><span class="portion-amount">2 × 3 в сторону</span></div><div class="portion-row"><span class="portion-name">Опция</span><span class="portion-amount">становая 1 × 6 или переноска 1 × 20 сек</span></div><div class="portion-row"><span class="portion-name">Свинг</span><span class="portion-amount">сегодня нет</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Шарнир и halo — две минуты, гиревой день взят.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Хочется веса — становая 1×6 или переноска, но не свинг: два свинга за неделю — достаточно для первой.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Вечером — как спина после недели: «не заметила» — лучший ответ; любой другой обсуждаем.</div></div><div class="recipe-note">Лёгкий день гири — не пропуск, а отметка.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-steps"></span>За день · Шаги</div><div class="meal-title">10 000 шагов</div><span class="meal-kcal">цель 10 000</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Опорный день №4</div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">10 000 за день</span></div><div class="portion-row"><span class="portion-name">Статус дня</span><span class="portion-amount">опорный</span></div><div class="recipe-divider"></div><div class="recipe-label">Как идти</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Воскресенье — опорный с недели 11, ни разу не выпадал.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Вернулся — повис 20 секунд, неделя закрыта.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">В итогах — сколько дней с 10к на рабочей неделе и как ноги.</div></div><div class="recipe-note">4-5 дней на рабочей неделе — норма после отпускной семёрки.</div></div>
+      </div></div>
+      <div class="flip-wrap" onclick="openCard(this)"><div class="flip-inner">
+        <div class="card-front"><div class="meal-type"><span class="meal-type-dot dot-cold"></span>Душ дня · Закалка<span class="new-tag">C1</span></div><div class="meal-title">Холодный финиш C1 + итоги</div><span class="meal-kcal">10 → 30 сек</span><div class="flip-hint">↻ детали</div></div>
+        <div class="card-back"><div class="back-title">Финиш + шесть пунктов итогов</div><div class="portion-row"><span class="portion-name">Порог</span><span class="portion-amount">10 сек = плюсик</span></div><div class="portion-row"><span class="portion-name">Цель</span><span class="portion-amount">20-30 сек спокойно</span></div><div class="portion-row"><span class="portion-name">Итоги</span><span class="portion-amount">вечером, шесть пунктов</span></div><div class="recipe-divider"></div><div class="recipe-label">Как делать</div><div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text">Финиш как обычно: конечности → спина, длинный выдох, секунды в отметку.</div></div><div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text">Итоги: ① турник-дни и отжимания · ② свинг: оба дня, спина, вопросы · ③ гиря-дни, гоблет/переноска · ④ ❄️ финиши с секундами · ⑤ шаги и ноги · ⑥ практика и своё.</div></div><div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text">Снял видео свинга — скажи, разберу к следующей неделе.</div></div><div class="recipe-note">Взяли три метрики — на следующей неделе свинг растёт до 5×10 и обсуждаем секунды виса.</div></div>
+      </div></div>
+    </div>
+  </div>
+</section>
+<section class="section" id="progress">
+  <div class="info-card">
+    <h2>Фокус недели 15 — свинг входит, вис тянет отжимания</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Неделя после отпуска: ничего не наращиваю и ничего не режу — кроме одной связки.</p>
+    <div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Отпуск — не откат.</strong> Силовых было мало, но всё, что было, — полного объёма: вис 3×20, становая 3×8 с halo, две тридцатки в душе. Уровни P1 / H0 / C1 держим, объёмы прежние: вис мин 1×20, отжимания мин 1×8, становая мин 1×6.</div></div>
+    <div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Турник-минутка в дни отжиманий (вт, чт, сб):</strong> вис 20 сек → 8 отжиманий, одна карточка. Крючок виса — «вернулся с прогулки» — работает: пн и пт обе последние недели. У отжиманий крючка не было, теперь вис и есть крючок. Цель по турнику — <strong>3 дня из 7</strong>, из них хотя бы один с отжиманиями.</div></div>
+    <div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>KB1 — русский свинг:</strong> среда и пятница, 3×10 → 3-5×10, формат «10 в начале минуты». Порог KB0→KB1 пройден видео 04.09; единственная правка — шея (взгляд в пол ~2 м впереди). Видео свинга в пятницу — опция, пропуск к объёму KB2.</div></div>
+    <div class="recipe-step"><div class="recipe-num">4</div><div class="recipe-text"><strong>Гиря каждый день — волной:</strong> пн становая · вт гоблет-присед (новое) · ср свинг · чт без веса · пт свинг · сб переноска (новое) · вс в охотку. Минимум дня — один подход; ориентир 4+ дней из 7.</div></div>
+    <div class="recipe-step"><div class="recipe-num">5</div><div class="recipe-text"><strong>Холод: закрепить 30 секунд.</strong> Порог 10 сек = плюсик, цель — ещё 2-3 тридцатки, секунды писать в отметку. Кран остывает: те же 30 — уже рост.</div></div>
+    <div class="recipe-step"><div class="recipe-num">6</div><div class="recipe-text"><strong>Шаги и практика — без изменений.</strong> Опорные ср/пт/сб/вс, семёрки на рабочей неделе не жду; эллипсоид твой, в план не ставится; йога/тай-чи — личное дело.</div></div>
+    <div class="recipe-note">Метрики недели: <strong>турник в 3 днях, хотя бы один с отжиманиями</strong> · <strong>свинг сделан в оба дня</strong> · <strong>гиря в 4+ днях</strong>. Возьмём — на следующей неделе свинг растёт до 5×10 и обсуждаем секунды виса.</div>
+  </div>
+
+  <div class="info-card">
+    <h2>Разбор недели 14 — отпуск по отметкам</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Мало, но всё, что было, — в полный объём. И одна закономерность, которую нельзя не заметить.</p>
+    <div class="portion-row"><span class="portion-name">Понедельник</span><span class="portion-amount">вис 3×20 + становая 3×8 + halo 3+3 ×2</span></div>
+    <div class="portion-row"><span class="portion-name">Пятница</span><span class="portion-amount">вис + становая 3×8 + halo ×4 + видео снято</span></div>
+    <div class="portion-row"><span class="portion-name">Вторник / суббота</span><span class="portion-amount">❄️ 30 сек / финиш без цифры</span></div>
+    <div class="portion-row"><span class="portion-name">Среда</span><span class="portion-amount">йога 10 мин</span></div>
+    <div class="portion-row"><span class="portion-name">Шаги</span><span class="portion-amount" style="color:#6cc08b">7 из 7 — первая полная неделя по отметкам</span></div>
+    <div class="portion-row"><span class="portion-name">Турник / гиря</span><span class="portion-amount" style="color:var(--accent-push)">2 дня из 7 (цель 3) / 2 из 7 (ориентир 4+)</span></div>
+    <div class="portion-row"><span class="portion-name">P1</span><span class="portion-amount" style="color:var(--accent-push)">0 из 3 плановых дней — вторая неделя подряд без отжиманий</span></div>
+    <div class="portion-row"><span class="portion-name">Гоблет / переноска</span><span class="portion-amount" style="color:var(--accent-push)">не попробованы — переезжают</span></div>
+    <div class="recipe-divider"></div>
+    <div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Отпуск объясняет объём, но не рисунок.</strong> Дни с висом (пн, пт) — это же дни с гирей, в логе они совпадают до минут. Дни с отжиманиями (вт, чт, сб) — пустые целиком: ни отжиманий, ни гири. Крючок работает у виса, и всё, что стоит рядом с висом, случается.</div></div>
+    <div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Отсюда минутка:</strong> не новая нагрузка, а перенос отжиманий туда, где ты уже стоишь — к турнику после прогулки. Это не «привязка к йоге» недели 9: тот якорь сам был нестабилен, а вис после прогулки — самая надёжная отметка проекта.</div></div>
+    <div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Видео сделало своё дело:</strong> спина прямая, таз назад, голень вертикальна — шарнир чистый, порог в свинг пройден. Единственная правка — шея: взгляд вперёд переразгибал её, смотрим в пол.</div></div>
+    <div class="recipe-step"><div class="recipe-num">4</div><div class="recipe-text"><strong>Холод — две отметки при «душа мало».</strong> Значит, формула «есть душ = есть финиш» держится на 100%, а тридцатка повторена. Трек здоров, трогать нечего.</div></div>
+  </div>
+
+  <div class="info-card">
+    <h2>Где ты сейчас</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Пять треков: турник (push+pull), гиря, шаги, холод — и практика рядом</p>
+    <div class="portion-row"><span class="portion-name">Отжимания (PUSH)</span><span class="portion-amount" style="color:var(--accent-push)">P1 · от опоры, мин 1×8 · 0 дней за две недели — чиним крючком</span></div>
+    <div class="portion-row"><span class="portion-name">Вис (PULL)</span><span class="portion-amount">H0 · 20 сек (пик 36) · 3×20 два понедельника подряд — форма на месте</span></div>
+    <div class="portion-row"><span class="portion-name">Гиря (KB)</span><span class="portion-amount" style="color:#d97a6c">🏋️ KB1 — свинг входит · становая 3×8 ×5 без вопросов от спины · видео ✓</span></div>
+    <div class="portion-row"><span class="portion-name">Шаги</span><span class="portion-amount" style="color:#6cc08b">🚶 7/7 в отпуске · опорные ср, пт, сб, вс · пн приходит сам</span></div>
+    <div class="portion-row"><span class="portion-name">Закалка (COLD)</span><span class="portion-amount" style="color:#5ec8d8">C1 · порог 10 сек · 30 сек дважды — закрепляем</span></div>
+    <div class="portion-row"><span class="portion-name">Мягкая практика</span><span class="portion-amount" style="color:var(--accent-mob)">🧘 йога / тай-чи — твоё, без долга</span></div>
+    <div class="recipe-divider"></div>
+    <div class="recipe-label">Ближайшие шаги</div>
+    <div class="recipe-step"><div class="recipe-num">1</div><div class="recipe-text"><strong>Эта неделя:</strong> турник в 3 днях с хотя бы одними отжиманиями, свинг в среду и пятницу, гиря в 4+ днях, пара тридцаток в душе. Остальное — бонус.</div></div>
+    <div class="recipe-step"><div class="recipe-num">2</div><div class="recipe-text"><strong>Дальше (гиря):</strong> свинг чистый на видео → KB2: объём до 8-10×10, жим с пола → стоя, переноска 3×40 сек. 16 кг — не раньше, чем свинг 12 кг станет лёгким на 8-10×10.</div></div>
+    <div class="recipe-step"><div class="recipe-num">3</div><div class="recipe-text"><strong>Дальше (pull):</strong> три турник-дня дважды подряд → вис 20 → 25 → 30. Уверенные <strong>3×30</strong> закроют milestone HANG и откроют активный вис со scapular.</div></div>
+    <div class="recipe-step"><div class="recipe-num">4</div><div class="recipe-text"><strong>Дальше (push):</strong> P1 в 3-4 днях недели легко → P2, низкая опора. Каждый сброшенный килограмм работает на этот переход.</div></div>
+    <div class="recipe-step"><div class="recipe-num">5</div><div class="recipe-text"><strong>Дальше (холод):</strong> 30 сек спокойно 5+ раз → 60 сек → C2 (ежедневная привычка). Кран остывает — лестница пойдёт сама; про C3 (весь душ холодный) — в октябре.</div></div>
+    <div class="recipe-note">📏 В воскресенье жду шесть пунктов: турник-дни и отжимания · свинг: оба дня, спина, вопросы · гиря-дни, гоблет/переноска · ❄️ финиши с секундами · шаги и ноги · практика/своё.</div>
+  </div>
+</section>
+<section class="section" id="tech">
+  <div class="info-card">
+    <h2>Техника недели</h2>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:18px">Два новшества: <strong style="color:#d97a6c">русский свинг</strong> — первое баллистическое движение проекта — и <strong style="color:var(--accent-push)">турник-минутка</strong>, где вис ведёт за собой отжимания. Принципы прежние: вне отказа, чисто, с запасом 3-4 повтора. Любая боль (не усталость мышц) — стоп и скажи мне.</p>
+
+    <!-- ПРАВИЛО НЕДЕЛИ -->
+    <div class="cook-block">
+      <h3>Правило недели: минутка — вис ведёт, отжимания идут следом</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="270" height="74" viewBox="0 0 270 74" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="16" width="64" height="30" rx="8" stroke="#6cc08b" stroke-width="1.8"/><text x="36" y="35" fill="#6cc08b" font-size="9.5" text-anchor="middle" font-family="DM Sans">прогулка</text>
+            <path d="M70 31 h14 M80 27 l4 4 -4 4" stroke="#51606e" stroke-width="2"/>
+            <rect x="88" y="16" width="74" height="30" rx="8" stroke="#4f9dd9" stroke-width="1.8"/><text x="125" y="35" fill="#4f9dd9" font-size="9.5" text-anchor="middle" font-family="DM Sans">вис 20 сек</text>
+            <path d="M164 31 h14 M174 27 l4 4 -4 4" stroke="#51606e" stroke-width="2"/>
+            <rect x="182" y="16" width="84" height="30" rx="8" stroke="#e0a04e" stroke-width="1.8"/><text x="224" y="35" fill="#e0a04e" font-size="9.5" text-anchor="middle" font-family="DM Sans">отжимания ×8</text>
+            <text x="135" y="66" fill="#51606e" font-size="8.5" text-anchor="middle" font-family="DM Sans">крючок → разминка → плюсик · дальше гиря и душ</text>
+          </svg>
+          <span class="cap">В дни отжиманий вис — не задание, а дорога к ним</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text"><strong>Почему так:</strong> две недели подряд все дни с отметками турника были днями виса, а все дни с отжиманиями — пустыми. Вис случается, потому что турник стоит на пути с прогулки. Отжимания не случались, потому что у них не было своего «на пути». Теперь есть: слез с турника — ладони на подоконник или стену.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text"><strong>Что считается:</strong> в дни минутки отметка ставится за отжимания — минимум один подход по 8, от подоконника или от стены. Вис в минутке — 20 секунд разминки и крючок, отдельной отметки у него нет. В дни виса (пн, ср, пт, вс) всё как раньше: 1×20 — день зелёный.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>Минимальный полный день проекта — примерно 3 минуты:</strong> минутка на турнике + один подход гири + 10 секунд холода. Всё остальное — бонусы по настроению.</div></div>
+      <div class="tip-box">Это не «привязка к йоге» недели 9. Тот якорь сам был нестабилен и утянул за собой силовой. Вис после прогулки — наоборот, самая надёжная отметка проекта: он был в каждой из последних четырёх недель. К нему и цепляем.</div>
+    </div>
+
+    <!-- СВИНГ -->
+    <div class="cook-block">
+      <h3>🏋️ Русский свинг — первое баллистическое движение (KB1)</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <circle cx="46" cy="46" r="7" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="52" y1="50" x2="88" y2="66" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="88" y1="66" x2="84" y2="86" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="84" y1="86" x2="80" y2="104" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="56" y1="54" x2="100" y2="78" stroke="#8b9bab" stroke-width="2.6"/>
+            <path d="M100 78 q6 -8 12 0" stroke="#d97a6c" stroke-width="2.6"/>
+            <circle cx="106" cy="86" r="8" stroke="#d97a6c" stroke-width="2.6"/>
+            <path d="M40 60 l-4 10" stroke="#e0a04e" stroke-width="2.2"/>
+            <text x="30" y="82" fill="#e0a04e" font-size="8.5" text-anchor="middle" font-family="DM Sans">взгляд в пол</text>
+            <text x="128" y="70" fill="#d97a6c" font-size="8.5" text-anchor="middle" font-family="DM Sans">гиря в пах</text>
+          </svg>
+          <span class="cap">Низ: замах — таз назад, спина прямая, предплечья высоко у паха, гиря позади</span>
+        </div>
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <circle cx="62" cy="28" r="7" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="62" y1="35" x2="62" y2="72" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="62" y1="72" x2="58" y2="104" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="62" y1="72" x2="66" y2="104" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="62" y1="42" x2="108" y2="46" stroke="#8b9bab" stroke-width="2.6"/>
+            <path d="M108 46 q6 -8 12 0" stroke="#d97a6c" stroke-width="2.6"/>
+            <circle cx="114" cy="54" r="8" stroke="#d97a6c" stroke-width="2.6"/>
+            <line x1="30" y1="46" x2="140" y2="46" stroke="#e0a04e" stroke-width="1.4" stroke-dasharray="3 4"/>
+            <text x="30" y="40" fill="#e0a04e" font-size="8.5" text-anchor="start" font-family="DM Sans">уровень груди — потолок</text>
+            <text x="62" y="116" fill="#d97a6c" font-size="8.5" text-anchor="middle" font-family="DM Sans">стоячая планка</text>
+          </svg>
+          <span class="cap">Верх: щелчок таза, ноги прямые, ягодицы сжаты, руки-верёвки, гиря не выше груди</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text"><strong>Разминка обязательна:</strong> шарнир у стены 5-8 → halo 3 круга в сторону → становая 1×6. Полторы-две минуты, и тело вспоминает шарнир — свинг это тот же шарнир, только быстро.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text"><strong>Старт — с пола, замахом.</strong> Гиря стоит в ~30 см перед стопами, стопы чуть шире плеч. Наклон шарниром, спина прямая, взгляд в пол ~2 м впереди. Берёшь ручку, наклоняешь гирю на себя и <em>закидываешь</em> её назад между ног — высоко, предплечья касаются внутренней стороны бёдер у паха. Низкая гиря у коленей — самая частая ошибка новичков и главный риск для поясницы.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>Щелчок таза — единственный мотор.</strong> Из замаха резко подаёшь таз вперёд и выпрямляешь ноги, ягодицы сжаты, — гиря вылетает сама. Руки прямые и расслабленные, как верёвки: плечами не тянуть. Вверху ты — стоячая планка: колени прямые, таз под собой, поясница без прогиба. Гиря останавливается на уровне груди и ни сантиметром выше: русский свинг — до груди, американский (над головой) не делаем вообще.</div></div>
+      <div class="cook-step"><div class="step-num">4</div><div class="step-text"><strong>Вниз — ждать, потом шарнир.</strong> Не тяни гирю вниз и не приседай навстречу. Дождись, пока она сама пойдёт вниз, и когда предплечья почти коснутся бёдер — таз назад. Колени гнутся чуть-чуть, голень почти вертикальна: это шарнир, не присед.</div></div>
+      <div class="cook-step"><div class="step-num">5</div><div class="step-text"><strong>Шея и дыхание.</strong> Правка из видео становой: шея в линию со спиной — внизу взгляд в пол ~2 м впереди, вверху на горизонт, не задирать голову. Резкий выдох через сжатые губы на щелчке таза, вдох на замахе. Никаких задержек.</div></div>
+      <div class="cook-step"><div class="step-num">6</div><div class="step-text"><strong>Формат и финиш.</strong> 10 свингов в начале минуты, отдых до конца минуты, следующая минута — ещё 10. Среда — 3 минуты, пятница — 3-5. Последний свинг серии — не бросать: дать гире пройти назад между ног и <em>поставить на пол шарниром</em> перед собой, спина прямая.</div></div>
+      <div class="warn-box">Красные линии свинга: округление или переразгиб поясницы = конец подхода немедленно · гиря выше груди = слишком много силы, следующий подход ниже · свинг «в присед» (колени вперёд, гиря ныряет к коленям) = стоп, обратно к шарниру у стены и замахам · хват срывается = серия окончена · 2 м свободного пола впереди: если ручка выскользнет — отпусти, не догоняй. Боль в пояснице (не крепатура) = стоп на неделю, назад к становой и разбор.</div>
+      <div class="tip-box">12 кг для свинга при твоём весе быстро станут лёгкими — это нормально и правильно: на KB1 растёт техника, не нагрузка. 16 кг — не раньше, чем свинг 12 кг будет лёгким на 8-10×10 подряд.</div>
+    </div>
+
+    <!-- ГОБЛЕТ + ПЕРЕНОСКА -->
+    <div class="cook-block">
+      <h3>Гоблет-присед (вт) и чемоданная переноска (сб) — два движения, что переехали</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <circle cx="74" cy="38" r="7" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="76" y1="45" x2="82" y2="76" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="82" y1="76" x2="54" y2="80" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="54" y1="80" x2="60" y2="104" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="76" y1="52" x2="66" y2="68" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="66" y1="68" x2="64" y2="56" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="62" cy="50" r="6.5" stroke="#d97a6c" stroke-width="2.6"/>
+            <text x="112" y="58" fill="#d97a6c" font-size="8.5" text-anchor="middle" font-family="DM Sans">локти вниз</text>
+            <text x="112" y="98" fill="#e0a04e" font-size="8.5" text-anchor="middle" font-family="DM Sans">пятки на полу</text>
+          </svg>
+          <span class="cap">Гоблет-присед: гиря у груди — противовес, корпус вертикален, садишься между коленей</span>
+        </div>
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="64" y1="14" x2="64" y2="100" stroke="#e0a04e" stroke-width="1.4" stroke-dasharray="3 4"/>
+            <circle cx="64" cy="26" r="7" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="64" y1="33" x2="64" y2="70" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="64" y1="70" x2="54" y2="104" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="64" y1="70" x2="76" y2="102" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="64" y1="40" x2="84" y2="80" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="46" y1="40" x2="84" y2="40" stroke="#e0a04e" stroke-width="1.4" stroke-dasharray="3 4"/>
+            <path d="M84 80 q5 -7 10 0" stroke="#d97a6c" stroke-width="2.6"/>
+            <circle cx="89" cy="88" r="7" stroke="#d97a6c" stroke-width="2.6"/>
+            <text x="118" y="36" fill="#e0a04e" font-size="8.5" text-anchor="middle" font-family="DM Sans">плечи ровно</text>
+          </svg>
+          <span class="cap">Переноска: корпус строго вертикален, плечи на одном уровне, к гире не заваливаться</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text"><strong>Гоблет-присед (вт, 2×6-8):</strong> гиря за рога дном вниз у груди, локти вниз, стопы чуть шире плеч, носки чуть наружу. Садишься между коленей — колени идут в сторону носков, пятки на полу, спина прямая. Глубина — докуда чисто. Вверх — толкая пол, ягодицы вверху сжаты. Гиря спереди уравновешивает, поэтому с ней присед ровнее, чем без веса. Спина при этом вертикальна — это отдых от шарнира между понедельником и средой.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text"><strong>Переноска (сб, 2×20-30 сек на сторону):</strong> гиря в одной руке, поднята и опущена шарниром. Идёшь спокойным шагом, корпус вертикален, плечи на одном уровне — не заваливаться к гире и не отклоняться от неё. «Движущаяся боковая планка»: работают косые и хват. Хват — прямой вклад в вис.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>Оба — на минимум:</strong> они не успели на прошлой неделе, и это единственная причина, по которой они снова здесь. Один подход по 6 приседов или 20 секунд на сторону — гиревой день взят. Колени болят на приседе (не устают) — стоп и скажи мне.</div></div>
+    </div>
+
+    <!-- СТАНОВАЯ -->
+    <div class="cook-block">
+      <h3>Становая с гирей — теперь разминка перед свингом и рабочий понедельник</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <circle cx="64" cy="93" r="8" stroke="#d97a6c" stroke-width="2.6"/>
+            <path d="M58 87 q6 -8 12 0" stroke="#d97a6c" stroke-width="2.6"/>
+            <circle cx="44" cy="42" r="7" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="50" y1="46" x2="84" y2="62" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="84" y1="62" x2="76" y2="86" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="76" y1="86" x2="72" y2="104" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="52" y1="48" x2="62" y2="82" stroke="#8b9bab" stroke-width="2.6"/>
+            <path d="M92 56 l10 4 M92 62 l10 -2" stroke="#d97a6c" stroke-width="2.2"/>
+            <text x="118" y="62" fill="#d97a6c" font-size="8.5" text-anchor="start" font-family="DM Sans">таз назад</text>
+          </svg>
+          <span class="cap">Старт: таз назад шарниром, спина прямая, гиря над серединой стоп</span>
+        </div>
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <circle cx="78" cy="28" r="7" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="78" y1="35" x2="78" y2="72" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="78" y1="72" x2="74" y2="104" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="78" y1="72" x2="82" y2="104" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="78" y1="42" x2="76" y2="78" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="76" cy="88" r="7" stroke="#d97a6c" stroke-width="2.6"/>
+            <path d="M71 83 q5 -7 10 0" stroke="#d97a6c" stroke-width="2.6"/>
+            <text x="108" y="56" fill="#d97a6c" font-size="8.5" text-anchor="start" font-family="DM Sans">стоячая планка</text>
+          </svg>
+          <span class="cap">Верх: встал, толкая пол ногами; ягодицы сжаты, без прогиба</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text"><strong>Что показало видео (04.09):</strong> в нижней точке линия спины прямая, таз уходит назад, голень почти вертикальна — шарнир, не присед; ни округления, ни переразгиба. Это и есть порог KB0→KB1, он пройден.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text"><strong>Единственная правка — шея.</strong> Взгляд шёл вперёд, шея в переразгибе. Смотрим в пол ~2 м перед собой, затылок в линию со спиной. В свинге это важнее, чем в становой: голова, задранная на скорости, тянет за собой поясницу.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>Доза прежняя:</strong> понедельник 2-3×8 с halo, перед свингом 1×6 как разминка, в воскресенье по желанию. Ручка над серединой стоп, таз назад, встаёшь, толкая пол ногами, вверху ягодицы сжаты.</div></div>
+      <div class="warn-box">Следующее видео — уже свинга, в облегающей майке: свободная футболка на прошлом видео не дала увидеть поясницу напрямую, оценивал по контуру.</div>
+    </div>
+
+    <!-- ВИС -->
+    <div class="cook-block">
+      <h3>Вис на перекладине (H0) — крючок всего проекта</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="86" height="150" viewBox="0 0 86 150" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="18" x2="80" y2="18" stroke="#4f9dd9" stroke-width="3"/>
+            <circle cx="32" cy="18" r="2.6" fill="#8b9bab"/>
+            <circle cx="54" cy="18" r="2.6" fill="#8b9bab"/>
+            <line x1="32" y1="18" x2="38" y2="45" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="54" y1="18" x2="48" y2="45" stroke="#8b9bab" stroke-width="2.5"/>
+            <circle cx="43" cy="40" r="7" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="47" x2="43" y2="99" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="99" x2="38" y2="136" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="99" x2="48" y2="136" stroke="#8b9bab" stroke-width="2.5"/>
+          </svg>
+          <span class="cap">Пассивный вис: прямые руки, плечи от ушей, тело спокойно висит</span>
+        </div>
+        <div class="ex-phase">
+          <svg width="86" height="150" viewBox="0 0 86 150" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="18" x2="80" y2="18" stroke="#4f9dd9" stroke-width="3"/>
+            <circle cx="32" cy="18" r="2.6" fill="#8b9bab"/>
+            <circle cx="54" cy="18" r="2.6" fill="#8b9bab"/>
+            <line x1="32" y1="18" x2="37" y2="40" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="54" y1="18" x2="49" y2="40" stroke="#8b9bab" stroke-width="2.5"/>
+            <circle cx="43" cy="36" r="7" stroke="#e0a04e" stroke-width="2.5"/>
+            <line x1="43" y1="43" x2="43" y2="95" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="95" x2="38" y2="132" stroke="#8b9bab" stroke-width="2.5"/>
+            <line x1="43" y1="95" x2="48" y2="132" stroke="#8b9bab" stroke-width="2.5"/>
+            <path d="M28 52 l-6 6 M58 52 l6 6" stroke="#e0a04e" stroke-width="2.2"/>
+            <text x="43" y="146" fill="#e0a04e" font-size="9" text-anchor="middle" font-family="DM Sans">лопатки вниз-назад</text>
+          </svg>
+          <span class="cap">Активный вис: локти прямые, плечи вниз, тело чуть приподнимается</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text">Хват сверху на ширине плеч, большой палец обхватывает перекладину, <strong>прямые руки</strong>, плечи мягко вниз, дыхание ровное. Отсчитал 20 — слезай, даже если можешь больше.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text"><strong>Крючок: вернулся с прогулки — повис.</strong> Это единственный якорь проекта, который работает без сбоев: пн 24.08, пн 31.08 (оба 3×20), пт 04.09. Теперь он же тянет и отжимания.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text">Опция в конце подхода: 5 секунд активного виса — плечи от ушей, лопатки вниз-назад. Полноценным заданием станет после milestone HANG (3×30).</div></div>
+      <div class="tip-box">В дни свинга вис — <strong>до</strong> гири: после свинга и переноски хват уставший, а сорванная мозоль отнимет неделю. Хват не дотягивает — носки на пол или табурет.</div>
+    </div>
+
+    <!-- ОТЖИМАНИЯ P1 -->
+    <div class="cook-block">
+      <h3>💪 Отжимания от опоры (P1) — теперь сразу после виса</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="84" y1="48" x2="150" y2="48" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="140" y1="48" x2="140" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="20" y1="102" x2="92" y2="62" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="101" cy="57" r="6.5" stroke="#8b9bab" stroke-width="2.6"/>
+            <line x1="92" y1="62" x2="96" y2="50" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="20" cy="102" r="2.6" fill="#8b9bab"/>
+            <circle cx="96" cy="50" r="2.4" fill="#8b9bab"/>
+          </svg>
+          <span class="cap">Старт: руки прямые, тело — планка</span>
+        </div>
+        <div class="ex-phase">
+          <svg width="156" height="118" viewBox="0 0 156 118" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="6" y1="104" x2="150" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="84" y1="48" x2="150" y2="48" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="140" y1="48" x2="140" y2="104" stroke="#4f9dd9" stroke-width="3"/>
+            <line x1="20" y1="102" x2="100" y2="68" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="109" cy="63" r="6.5" stroke="#8b9bab" stroke-width="2.6"/>
+            <polyline points="100,68 111,59 96,50" stroke="#8b9bab" stroke-width="2.6"/>
+            <circle cx="20" cy="102" r="2.6" fill="#8b9bab"/>
+            <circle cx="96" cy="50" r="2.4" fill="#8b9bab"/>
+            <line x1="58" y1="34" x2="80" y2="46" stroke="#e0a04e" stroke-width="2.4"/>
+            <polyline points="71.1,45.7 80,46 74.9,38.7" stroke="#e0a04e" stroke-width="2.4"/>
+          </svg>
+          <span class="cap">Низ: локти ~45°, грудь к краю опоры</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text"><strong>Опора капитальная:</strong> подоконник, встроенная столешница, тяжёлый стол у стены. Навались и покачай: играет или едет — ищи другую. Нет опоры рядом с турником — стена, и это полный плюсик.</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text">Ладони на край на ширине плеч, тело — <strong>прямая планка</strong>. Локти ~45°, грудь к краю на вдохе, вверх на выдохе. 2 секунды вниз, без рывка вверх. Запястья перед этим — 20 секунд, если утром не было практики.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>Регулировка ногами:</strong> ближе к опоре легче. Стойку не меняем, пока P1 не начнёт случаться в 3-4 днях недели. P1 подтверждён трижды (2×8, 3×8, 2×8) — силы на месте, нужен момент.</div></div>
+      <div class="warn-box">При ~130 кг на край опоры давит 60-70 кг — лёгкий отдельно стоящий стол может опрокинуться. Боль в плече или запястье — стоп на сегодня и скажи мне.</div>
+    </div>
+
+    <!-- ХОЛОДНЫЙ ФИНИШ -->
+    <div class="cook-block">
+      <h3>❄️ Холодный финиш C1 — тридцатка дважды, теперь с цифрой каждый раз</h3>
+      <div class="ex-figure">
+        <div class="ex-phase">
+          <svg width="120" height="140" viewBox="0 0 120 140" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="60" y1="8" x2="60" y2="22" stroke="#5ec8d8" stroke-width="3"/>
+            <path d="M38 22 H82 L74 33 H46 Z" stroke="#5ec8d8" stroke-width="2.4"/>
+            <line x1="50" y1="40" x2="46" y2="60" stroke="#5ec8d8" stroke-width="2.2" stroke-dasharray="3 5"/>
+            <line x1="60" y1="40" x2="60" y2="62" stroke="#5ec8d8" stroke-width="2.2" stroke-dasharray="3 5"/>
+            <line x1="70" y1="40" x2="74" y2="60" stroke="#5ec8d8" stroke-width="2.2" stroke-dasharray="3 5"/>
+            <circle cx="60" cy="82" r="8" stroke="#8b9bab" stroke-width="2.4"/>
+            <line x1="60" y1="90" x2="60" y2="116" stroke="#8b9bab" stroke-width="2.4"/>
+            <line x1="60" y1="98" x2="50" y2="110" stroke="#8b9bab" stroke-width="2.4"/>
+            <line x1="60" y1="98" x2="70" y2="110" stroke="#8b9bab" stroke-width="2.4"/>
+            <path d="M76 80 q10 4 0 8" stroke="#e0a04e" stroke-width="2.2"/>
+            <text x="92" y="86" fill="#e0a04e" font-size="8.5" text-anchor="start" font-family="DM Sans">выдох</text>
+          </svg>
+          <span class="cap">Конечности под струёй, длинный выдох, голову не мочить</span>
+        </div>
+      </div>
+      <div class="cook-step"><div class="step-num">1</div><div class="step-text"><strong>Порог и цель — разные вещи.</strong> Порог 10 секунд: досчитал — плюсик полный. Цель 20-30: туда идёшь в дни, когда десятка спокойная. Тридцатка была 29.08 и 01.09 — третья, четвёртая и пятая сделают её нормой, и тогда поговорим о 60 секундах (C2).</div></div>
+      <div class="cook-step"><div class="step-num">2</div><div class="step-text"><strong>Пиши секунды.</strong> Субботний финиш пришёл без цифры — я не знаю, была ли это тридцатка или десятка, а для перехода на C2 нужны именно спокойные длинные финиши, пять штук. Цифра в отметке — две секунды.</div></div>
+      <div class="cook-step"><div class="step-num">3</div><div class="step-text"><strong>Механика:</strong> конечности первыми, голову не мочим, грудь не трогаем. Длинный выдох, плечи вниз, чуть двигаться. Кран в сентябре холоднее — те же секунды дают больше, за 40 не гонимся.</div></div>
+      <div class="warn-box">Красные линии: никакой гипервентиляции и задержек дыхания у воды · выходить ДО сильной дрожи · болезнь = полный стоп холода и силового. Первые 30-60 секунд холод поднимает пульс и давление — при ~130 кг растём маленькими шагами.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Pull-to-refresh -->
+<div id="ptr" aria-hidden="true">
+  <svg viewBox="0 0 44 76" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect id="ptr-bar" x="6" y="40" width="32" height="5" rx="2.5" fill="#4f9dd9"/>
+    <circle id="ptr-head" cx="22" cy="56" r="6" fill="#e0a04e" opacity="0"/>
+  </svg>
+</div>
+
+<div id="card-modal" onclick="if(event.target===this)closeModal()">
+  <div id="card-modal-inner"></div>
+</div>
+
+<script>
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+  }
+  function openCard(el) {
+    const back = el.querySelector('.card-back').innerHTML;
+    document.getElementById('card-modal-inner').innerHTML =
+      '<button class="modal-close" onclick="closeModal()">✕</button>' + back;
+    document.getElementById('card-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    document.getElementById('card-modal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  (function organizeDays() {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const grid = document.querySelector('.days-grid');
+    const cols = Array.from(grid.querySelectorAll('.day-col'));
+    const past = [], present = [], future = [];
+    cols.forEach(col => {
+      const d = col.dataset.date;
+      if (!d) { future.push(col); return; }
+      if (d < todayStr) past.push(col);
+      else if (d === todayStr) present.push(col);
+      else future.push(col);
+    });
+    present.forEach(col => {
+      col.classList.add('today');
+      const label = col.querySelector('.day-label');
+      if (label) label.insertAdjacentHTML('beforeend', '<span class="today-badge">Сегодня</span>');
+    });
+    past.forEach(col => col.classList.add('past'));
+    cols.forEach(c => c.remove());
+    [...present, ...future].forEach(c => grid.appendChild(c));
+    if (past.length > 0) {
+      const sep = document.createElement('div');
+      sep.className = 'past-header';
+      sep.textContent = 'Прошедшие дни';
+      grid.appendChild(sep);
+      past.forEach(c => grid.appendChild(c));
+    }
+  })();
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/push_pull-ups/sw.js', { scope: '/push_pull-ups/' });
+  }
+  (function () {
+    const ptr = document.getElementById('ptr');
+    if (!ptr) return;
+    const head = document.getElementById('ptr-head');
+    const THRESHOLD = 82;
+    let startY = 0, delta = 0, active = false;
+    function draw(p) {
+      ptr.style.top = (-76 + p * 90) + 'px';
+      ptr.style.opacity = Math.min(p * 2.5, 1);
+      head.style.opacity = Math.max(0, (p - 0.5) / 0.5);
+    }
+    function retract() {
+      ptr.style.transition = 'top .28s ease, opacity .22s ease';
+      ptr.style.top = '-76px'; ptr.style.opacity = '0';
+      setTimeout(() => { ptr.style.cssText = ''; head.style.opacity = '0'; }, 300);
+    }
+    document.addEventListener('touchstart', e => {
+      if (window.scrollY !== 0) return;
+      startY = e.touches[0].clientY; active = true;
+      ptr.style.cssText = 'transition:none';
+    }, { passive: true });
+    document.addEventListener('touchmove', e => {
+      if (!active) return;
+      delta = Math.max(0, e.touches[0].clientY - startY);
+      draw(Math.min(delta / THRESHOLD, 1));
+    }, { passive: true });
+    document.addEventListener('touchend', () => {
+      if (!active) return; active = false;
+      if (delta > THRESHOLD) { location.reload(); } else { retract(); }
+      delta = 0;
+    });
+  })();
+</script>
+
+<script type="module" src="../../assets/tracker.js"></script>
+</body>
+</html>
