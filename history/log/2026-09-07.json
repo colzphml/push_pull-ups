@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-09-09",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-10T18:41:39.282Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-09-09",
       "window": "когда угодно",
       "block": "kb",
       "exercise": "Гиря 12 кг — свинг (первый)",
