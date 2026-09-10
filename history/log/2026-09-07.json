@@ -26,6 +26,32 @@
       "note": "",
       "updated_at": "2026-09-09T06:59:39.581Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-09-10",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-10T17:40:26.938Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-09-10",
+      "window": "душ",
+      "block": "cold",
+      "exercise": "Холодный финиш C1",
+      "planned": "10 → 30 сек",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-10T17:40:28.855Z",
+      "device": "phone"
     }
   ]
 }
