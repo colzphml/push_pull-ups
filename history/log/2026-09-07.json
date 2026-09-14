@@ -91,6 +91,19 @@
       "note": "",
       "updated_at": "2026-09-11T13:29:00.457Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-09-12",
+      "window": "после прогулки",
+      "block": "push",
+      "exercise": "Вис 20 сек → отжимания (P1)",
+      "planned": "20 сек + минимум 1 × 8",
+      "done": 1,
+      "actual": "1х8",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-14T08:25:26.677Z",
+      "device": "phone"
     }
   ]
 }
