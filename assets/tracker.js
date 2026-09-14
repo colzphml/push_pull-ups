@@ -51,9 +51,11 @@ const styles = `
 .tr-sheet .tr-plan{font-size:12px;color:var(--text-dim);margin:0 0 16px}
 .tr-sheet label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;
   color:var(--text-dim);margin:14px 0 6px}
+/* Не меньше 16px: на более мелком шрифте iOS Safari при фокусе увеличивает страницу
+   и после закрытия шторки масштаб не возвращает. */
 .tr-sheet input,.tr-sheet textarea{width:100%;box-sizing:border-box;background:#0f151c;
   border:1px solid var(--border);border-radius:9px;color:inherit;padding:9px 11px;
-  font:inherit;font-size:14px}
+  font:inherit;font-size:16px}
 .tr-chips{display:flex;gap:7px;flex-wrap:wrap}
 .tr-chips button{flex:1;min-width:70px;background:#0f151c;border:1px solid var(--border);
   border-radius:9px;color:var(--text-dim);padding:8px 4px;font-size:12.5px;cursor:pointer}
