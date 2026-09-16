@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-09-14",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-16T04:23:12.329Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-09-14",
       "window": "когда угодно",
       "block": "kb",
       "exercise": "Гиря 12 кг — становая + свинг с остановкой",
@@ -25,6 +38,32 @@
       "felt": "",
       "note": "",
       "updated_at": "2026-09-14T13:38:31.237Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-09-15",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-16T04:23:16.328Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-09-15",
+      "window": "душ",
+      "block": "cold",
+      "exercise": "Холодный финиш C1",
+      "planned": "10 → 40 сек",
+      "done": 1,
+      "actual": "40 сек",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-16T04:23:25.546Z",
       "device": "phone"
     }
   ]
