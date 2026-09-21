@@ -2,3 +2,5 @@ profile.json
 .DS_Store
 *.db-journal
 .superpowers/
+IMG_*.mov
+*.mov
