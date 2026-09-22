@@ -13,6 +13,19 @@
       "note": "",
       "updated_at": "2026-09-22T13:04:16.384Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-09-22",
+      "window": "после прогулки",
+      "block": "pull",
+      "exercise": "Вис на перекладине",
+      "planned": "минимум 1 × 20 сек",
+      "done": 1,
+      "actual": "3 × 20 сек",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-22T13:09:40.452Z",
+      "device": "phone"
     }
   ]
 }
