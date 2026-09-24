@@ -39,6 +39,19 @@
       "note": "",
       "updated_at": "2026-09-22T13:09:40.452Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-09-23",
+      "window": "душ",
+      "block": "cold",
+      "exercise": "Холодный финиш C1",
+      "planned": "10 → 45 сек",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-24T16:50:47.954Z",
+      "device": "phone"
     }
   ]
 }
