@@ -3,6 +3,19 @@
   "entries": [
     {
       "date": "2026-09-28",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-09-29T04:58:08.879Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-09-28",
       "window": "когда угодно",
       "block": "kb",
       "exercise": "Гиря 12 кг — становая + свинг с остановкой",
