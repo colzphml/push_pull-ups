@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { entryKey, mergeEntries, pendingEntries, sameEntries, weekStats, syncState, freeCustomTitle } from '../assets/tracker-core.js';
+import { entryKey, mergeEntries, pendingEntries, sameEntries, weekStats, syncState, freeCustomTitle, oneLine, pageLock } from '../assets/tracker-core.js';
 
 const base = {
   date: '2026-07-27', window: 'утро', block: 'pull',
@@ -242,4 +242,60 @@ test('syncState: идущая отправка важнее ошибки про�
     hasToken: true, pendingCount: 1, syncing: true, error: 'GitHub: лимит запросов',
   });
   assert.equal(state.label, 'Отправляю…');
+});
+
+test('oneLine склеивает переводы строк в один пробел и обрезает края', () => {
+  assert.equal(oneLine('  вис 3 × 20\nвсё хорошо \r\n  отжимания 3×8 '), 'вис 3 × 20 всё хорошо отжимания 3×8');
+});
+
+test('oneLine не трогает пробелы внутри строки', () => {
+  assert.equal(oneLine('3 ×  8'), '3 ×  8');
+});
+
+/** Окно-заглушка: scrollTo двигает scrollY и записывает вызовы. */
+function fakePage(scrollY) {
+  const calls = [];
+  const win = { scrollY, scrollTo(x, y) { calls.push([x, y]); this.scrollY = y; } };
+  const body = { style: { overflow: '' } };
+  return { win, body, calls };
+}
+
+test('pageLock возвращает прокрутку, которую iOS сдвинул под клавиатуру, пока шторка была открыта', () => {
+  const { win, body, calls } = fakePage(1200);
+  const lock = pageLock(win, body);
+  lock.lock();
+  assert.equal(body.style.overflow, 'hidden');
+  win.scrollY = 2100;
+  lock.unlock();
+  assert.deepEqual(calls, [[0, 1200]]);
+  assert.equal(body.style.overflow, '');
+});
+
+test('pageLock: unlock без lock не трогает ни прокрутку, ни overflow модалки оборота', () => {
+  const { win, body, calls } = fakePage(500);
+  body.style.overflow = 'hidden';
+  pageLock(win, body).unlock();
+  assert.deepEqual(calls, []);
+  assert.equal(body.style.overflow, 'hidden');
+});
+
+test('pageLock: повторный lock не перезаписывает запомненную позицию', () => {
+  const { win, body, calls } = fakePage(800);
+  const lock = pageLock(win, body);
+  lock.lock();
+  win.scrollY = 1700;
+  lock.lock();
+  lock.unlock();
+  assert.deepEqual(calls, [[0, 800]]);
+});
+
+test('pageLock: без сдвига страницу не дёргает, второй unlock подряд пустой', () => {
+  const { win, body, calls } = fakePage(300);
+  const lock = pageLock(win, body);
+  lock.lock();
+  lock.unlock();
+  win.scrollY = 900;
+  lock.unlock();
+  assert.deepEqual(calls, []);
+  assert.equal(body.style.overflow, '');
 });

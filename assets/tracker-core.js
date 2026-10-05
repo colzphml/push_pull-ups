@@ -130,3 +130,35 @@ export function freeCustomTitle(entries, date, name) {
     if (!taken.has(norm(candidate))) return candidate;
   }
 }
+
+/**
+ * Текст однострочного по смыслу поля. Поля шторок — textarea (в input длинная строка
+ * на iPhone уезжала за край), а input сам убирал переводы строк: данные остаются такими же.
+ */
+export function oneLine(text) {
+  return String(text || '').replace(/\s*[\r\n]+\s*/g, ' ').trim();
+}
+
+/**
+ * Замок прокрутки страницы под шторкой. overflow:hidden не мешает iOS Safari при фокусе поля
+ * в нижней шторке самому прокрутить страницу, чтобы поднять поле над клавиатурой, а после
+ * закрытия он её не возвращает — неделя оказывалась на день-два ниже. Поэтому позицию
+ * запоминаем при открытии и возвращаем при закрытии (так же делает Headless UI на iOS).
+ * unlock без lock пустой: Escape закрывает обе шторки разом, а модалка оборота карточки
+ * держит свой overflow. Окно и body приходят параметрами — сам модуль DOM не трогает.
+ */
+export function pageLock(win, body) {
+  let savedY = null;
+  return {
+    lock() {
+      if (savedY === null) savedY = win.scrollY;
+      body.style.overflow = 'hidden';
+    },
+    unlock() {
+      if (savedY === null) return;
+      body.style.overflow = '';
+      if (win.scrollY !== savedY) win.scrollTo(0, savedY);
+      savedY = null;
+    },
+  };
+}

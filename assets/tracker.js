@@ -1,5 +1,5 @@
 // DOM-слой трекера: контролы на карточках, шторки уточнения и добавления, шапка, синхронизация.
-import { weekStats, pendingEntries, mergeEntries, sameEntries, entryKey, syncState, freeCustomTitle } from './tracker-core.js';
+import { weekStats, pendingEntries, mergeEntries, sameEntries, entryKey, syncState, freeCustomTitle, oneLine, pageLock } from './tracker-core.js';
 import { blockFromDotClass, windowFromMealType, isTrackable } from './tracker-parse.js';
 import { Store } from './tracker-store.js';
 import { pullWeek, syncWeek, AuthError, describeSyncError } from './tracker-github.js';
@@ -56,6 +56,9 @@ const styles = `
 .tr-sheet input,.tr-sheet textarea{width:100%;box-sizing:border-box;background:#0f151c;
   border:1px solid var(--border);border-radius:9px;color:inherit;padding:9px 11px;
   font:inherit;font-size:16px}
+/* «Как вышло» и поля активности — textarea, растущие по тексту (высоту ставит fitField):
+   в однострочном input длинная строка на iPhone уезжала за край и не шла за курсором. */
+.tr-sheet .tr-line{display:block;resize:none;overflow-y:auto;max-height:9.5em}
 .tr-chips{display:flex;gap:7px;flex-wrap:wrap}
 .tr-chips button{flex:1;min-width:70px;background:#0f151c;border:1px solid var(--border);
   border-radius:9px;color:var(--text-dim);padding:8px 4px;font-size:12.5px;cursor:pointer}
@@ -462,6 +465,42 @@ async function flushOtherWeeks() {
   }
 }
 
+/* --- шторки: общее --- */
+
+let scrollLock = null;
+
+/** Высота поля .tr-line по тексту: textarea растёт, а не прячет строку за краем. */
+function fitField(field) {
+  field.style.height = 'auto';
+  field.style.height = `${field.scrollHeight + field.offsetHeight - field.clientHeight}px`;
+}
+
+/** Однострочное по смыслу поле: растёт по тексту, Enter не переносит строку, а убирает клавиатуру. */
+function lineField(field) {
+  field.addEventListener('input', () => fitField(field));
+  field.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' || event.isComposing) return;
+    event.preventDefault();
+    field.blur();
+  });
+}
+
+function showSheet(el) {
+  scrollLock.lock();
+  el.classList.add('open');
+  // Подгонять можно только видимую шторку: в скрытой scrollHeight равен нулю.
+  el.querySelectorAll('.tr-line').forEach(fitField);
+}
+
+function hideSheet(el) {
+  if (!el.classList.contains('open')) return;
+  // Клавиатуру убираем явно и до возврата прокрутки, а не ждём, пока браузер
+  // сам снимет фокус с поля в скрытой шторке.
+  if (el.contains(document.activeElement)) document.activeElement.blur();
+  el.classList.remove('open');
+  scrollLock.unlock();
+}
+
 /* --- шторка уточнения --- */
 
 let sheet = null;
@@ -474,7 +513,7 @@ function buildSheet() {
       <h3 id="tr-sheet-title"></h3>
       <p class="tr-plan" id="tr-sheet-plan"></p>
       <label for="tr-actual">Как вышло</label>
-      <input id="tr-actual" type="text" autocomplete="off">
+      <textarea id="tr-actual" class="tr-line" rows="1" enterkeyhint="done" autocomplete="off"></textarea>
       <label>Ощущения</label>
       <div class="tr-chips" id="tr-chips">
         <button type="button" data-felt="легко">легко</button>
@@ -490,14 +529,14 @@ function buildSheet() {
         <button type="button" class="tr-save" id="tr-save">Сохранить</button>
       </div>
     </div>`;
+  sheet.querySelectorAll('.tr-line').forEach(lineField);
   document.body.appendChild(sheet);
   sheet.addEventListener('click', event => { if (event.target === sheet) closeSheet(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape') closeSheet(); });
 }
 
 function closeSheet() {
-  sheet.classList.remove('open');
-  document.body.style.overflow = '';
+  hideSheet(sheet);
 }
 
 function openSheet(card) {
@@ -525,14 +564,13 @@ function openSheet(card) {
     const selected = document.querySelector('#tr-chips button.on');
     saveEntry(card, {
       done: entry.done ?? 1,
-      actual: document.getElementById('tr-actual').value.trim(),
+      actual: oneLine(document.getElementById('tr-actual').value),
       felt: selected ? selected.dataset.felt : '',
       note: document.getElementById('tr-note').value.trim(),
     });
     closeSheet();
   };
-  sheet.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  showSheet(sheet);
 }
 
 /* --- шторка добавления активности --- */
@@ -550,9 +588,9 @@ function buildAddSheet() {
       <label>Быстрый выбор</label>
       <div class="tr-chips tr-presets" id="tr-add-presets"></div>
       <label for="tr-add-name">Что делал</label>
-      <input id="tr-add-name" type="text" autocomplete="off" placeholder="Или напиши своими словами">
+      <textarea id="tr-add-name" class="tr-line" rows="1" enterkeyhint="done" autocomplete="off" placeholder="Или напиши своими словами"></textarea>
       <label for="tr-add-amount">Сколько — по желанию</label>
-      <input id="tr-add-amount" type="text" autocomplete="off" placeholder="40 мин · 5 км · 12 500 шагов">
+      <textarea id="tr-add-amount" class="tr-line" rows="1" enterkeyhint="done" autocomplete="off" placeholder="40 мин · 5 км · 12 500 шагов"></textarea>
       <div class="tr-actions">
         <button type="button" id="tr-add-cancel">Отмена</button>
         <button type="button" class="tr-save" id="tr-add-save">Добавить</button>
@@ -564,20 +602,23 @@ function buildAddSheet() {
     chip.type = 'button';
     chip.textContent = preset;
     chip.onclick = () => {
-      addSheet.querySelector('#tr-add-name').value = preset;
+      const name = addSheet.querySelector('#tr-add-name');
+      name.value = preset;
+      fitField(name);
       [...chips.children].forEach(c => c.classList.toggle('on', c === chip));
     };
     chips.appendChild(chip);
   }
+  addSheet.querySelectorAll('.tr-line').forEach(lineField);
   document.body.appendChild(addSheet);
   addSheet.addEventListener('click', event => { if (event.target === addSheet) closeAddSheet(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape') closeAddSheet(); });
   addSheet.querySelector('#tr-add-cancel').onclick = closeAddSheet;
   addSheet.querySelector('#tr-add-save').onclick = () => {
     const nameInput = document.getElementById('tr-add-name');
-    const name = nameInput.value.trim();
+    const name = oneLine(nameInput.value);
     if (!name) { nameInput.focus(); return; }
-    addCustom(addDate, name, document.getElementById('tr-add-amount').value.trim());
+    addCustom(addDate, name, oneLine(document.getElementById('tr-add-amount').value));
     closeAddSheet();
   };
 }
@@ -590,8 +631,7 @@ function dayTitle(date) {
 }
 
 function closeAddSheet() {
-  addSheet.classList.remove('open');
-  document.body.style.overflow = '';
+  hideSheet(addSheet);
 }
 
 function openAddSheet(date) {
@@ -600,8 +640,7 @@ function openAddSheet(date) {
   document.getElementById('tr-add-name').value = '';
   document.getElementById('tr-add-amount').value = '';
   [...addSheet.querySelectorAll('#tr-add-presets button')].forEach(c => c.classList.remove('on'));
-  addSheet.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  showSheet(addSheet);
 }
 
 /* --- запуск --- */
@@ -614,6 +653,7 @@ function mount() {
   entries = store.loadWeek(weekStart);
 
   injectStyles();
+  scrollLock = pageLock(window, document.body);
   buildSheet();
   buildAddSheet();
 
