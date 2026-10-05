@@ -1,0 +1,31 @@
+{
+  "week_start": "2026-10-05",
+  "entries": [
+    {
+      "date": "2026-10-05",
+      "window": "день",
+      "block": "steps",
+      "exercise": "10 000 шагов",
+      "planned": "цель 10 000",
+      "done": null,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-10-05T11:36:55.544Z",
+      "device": "phone"
+    },
+    {
+      "date": "2026-10-05",
+      "window": "после прогулки",
+      "block": "push",
+      "exercise": "Вис 20 сек → отжимания (P1)",
+      "planned": "20 сек + минимум 1 × 8",
+      "done": null,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-10-05T11:37:35.829Z",
+      "device": "phone"
+    }
+  ]
+}
