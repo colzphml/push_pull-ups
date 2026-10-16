@@ -26,6 +26,19 @@
       "note": "",
       "updated_at": "2026-10-14T15:41:00.093Z",
       "device": "phone"
+    },
+    {
+      "date": "2026-10-16",
+      "window": "когда угодно",
+      "block": "kb",
+      "exercise": "Гиря 12 кг — становая",
+      "planned": "минимум 1 × 6",
+      "done": 1,
+      "actual": "",
+      "felt": "",
+      "note": "",
+      "updated_at": "2026-10-16T14:35:13.041Z",
+      "device": "phone"
     }
   ]
 }
