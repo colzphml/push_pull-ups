@@ -283,7 +283,7 @@ function renderBar() {
   // Счётчик шагов — только на неделях, где такой блок вообще есть; «своё» — когда есть записи.
   if (document.querySelector('.dot-steps') || stats.stepsDays > 0) {
     const steps = document.createElement('span');
-    steps.textContent = `🚶 10к: ${stats.stepsDays}`;
+    steps.textContent = `🚶 шаги: ${stats.stepsDays}`;
     bar.appendChild(steps);
   }
   if (stats.ownDone > 0) {
